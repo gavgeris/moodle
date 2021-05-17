@@ -615,7 +615,9 @@ abstract class oauth2_client extends curl {
      * @param mixed $acceptheader mimetype (as string) or false to skip sending an accept header.
      * @return bool
      */
-    protected function request($url, $options = array(), $acceptheader = 'application/json') {
+    // GOV.GR
+    // Set acceptheader to null because TaxisNet returns XML not JSON
+    protected function request($url, $options = array(), $acceptheader = null) {
         $murl = new moodle_url($url);
 
         if ($this->accesstoken) {

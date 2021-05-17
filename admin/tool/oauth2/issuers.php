@@ -62,18 +62,20 @@ if ($action == 'edit') {
         $likefacebook = $DB->sql_like('url', ':facebook');
         $likegoogle = $DB->sql_like('url', ':google');
         $likemicrosoft = $DB->sql_like('url', ':microsoft');
+        $likegov = $DB->sql_like('url', ':gsis'); // GOV
         $params = [
             'issuerid' => $issuerid,
             'facebook' => '%facebook%',
             'google' => '%google%',
             'microsoft' => '%microsoft%',
+            'gsis'  => '%gsis.gr%', // GOV
         ];
-        $select = "issuerid = :issuerid AND ($likefacebook OR $likegoogle OR $likemicrosoft)";
+        $select = "issuerid = :issuerid AND ($likefacebook OR $likegoogle OR $likemicrosoft OR $likegov)"; // GOV
         // We're querying from the oauth2_endpoint table because the base URLs of FB and Microsoft can be empty in the issuer table.
         $showrequireconfirm = $DB->record_exists_select('oauth2_endpoint', $select, $params);
     }
-
     $mform = new \tool_oauth2\form\issuer(null, ['persistent' => $issuer, 'showrequireconfirm' => $showrequireconfirm]);
+
 }
 
 if ($mform && $mform->is_cancelled()) {

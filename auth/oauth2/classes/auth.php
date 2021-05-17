@@ -421,7 +421,11 @@ class auth extends \auth_plugin_base {
             $errormsg = get_string('loginerror_nouserinfo', 'auth_oauth2');
             $SESSION->loginerrormsg = $errormsg;
             $client->log_out();
-            redirect(new moodle_url('/login/index.php'));
+            // GOV.GR
+            // Logout from TaxisNet as well
+            $logout_url = $client->get_issuer()->get_endpoint_url('logout') ."/" . $client->get_issuer()->get("clientid") . "/?url=" . new moodle_url('/login/index.php');
+            redirect($logout_url);
+            //redirect(new moodle_url('/login/index.php'));
         }
         if (empty($userinfo['username']) || empty($userinfo['email'])) {
             // Trigger login failed event.
@@ -433,7 +437,11 @@ class auth extends \auth_plugin_base {
             $errormsg = get_string('loginerror_userincomplete', 'auth_oauth2');
             $SESSION->loginerrormsg = $errormsg;
             $client->log_out();
-            redirect(new moodle_url('/login/index.php'));
+            // GOV.GR
+            // Logout from TaxisNet as well
+            $logout_url = $client->get_issuer()->get_endpoint_url('logout') ."/" . $client->get_issuer()->get("clientid") . "/?url=" . new moodle_url('/login/index.php');
+            redirect($logout_url);
+//            redirect(new moodle_url('/login/index.php'));
         }
 
         $userinfo['username'] = trim(core_text::strtolower($userinfo['username']));
@@ -476,6 +484,8 @@ class auth extends \auth_plugin_base {
                 redirect(new moodle_url('/login/index.php'));
             } else if ($mappeduser && $mappeduser->confirmed) {
                 // Update user fields.
+                // GOV.GR: Don't update email because if user has change it then it will be ovewritten with taxid
+                $userinfo["email"] = $mappeduser->email;
                 $userinfo = $this->update_user($userinfo, $mappeduser);
                 $userwasmapped = true;
             } else {
@@ -520,7 +530,11 @@ class auth extends \auth_plugin_base {
         if (!$userwasmapped) {
             // No defined mapping - we need to see if there is an existing account with the same email.
 
-            $moodleuser = \core_user::get_user_by_email($userinfo['email']);
+            // GOV.GR
+            // TaxisNet doesn't return email and cannot verify the user by email.
+            // We change get_user_by_email to get_user_by_username because the email of oauth 2.0 users is filled manually by the users.
+            // $moodleuser = \core_user::get_user_by_email($userinfo['email']);
+            $moodleuser = \core_user::get_user_by_username($userinfo['username']);
             if (!empty($moodleuser)) {
                 if ($issuer->get('requireconfirmation')) {
                     $PAGE->set_url('/auth/oauth2/confirm-link-login.php');
@@ -533,7 +547,10 @@ class auth extends \auth_plugin_base {
                     $this->print_confirm_required($emailconfirm, $message);
                     exit();
                 } else {
-                    \auth_oauth2\api::link_login($userinfo, $issuer, $moodleuser->id, true);
+                    // ****** GOV.GR *******
+                    // Have to disable the link_login because raises an mooodle exception alreadylinked on 2nd login of user
+//                    \auth_oauth2\api::link_login($userinfo, $issuer, $moodleuser->id, true);
+                    $userinfo["email"] = $moodleuser->email;
                     $userinfo = $this->update_user($userinfo, $moodleuser);
                     // No redirect, we will complete this login.
                 }
@@ -604,6 +621,12 @@ class auth extends \auth_plugin_base {
                 }
             }
         }
+        // GOV.GR
+        // Logout from TaxisNet before continue.
+        // I send the redirect_url to taxisnet logout url so to return on the page that user asked for
+        $redirecturl =   $client->get_issuer()->get_endpoint_url('logout') ."/" .
+                        $client->get_issuer()->get("clientid") .
+                        "/?url=" . $redirecturl;
 
         // We used to call authenticate_user - but that won't work if the current user has a different default authentication
         // method. Since we now ALWAYS link a login - if we get to here we can directly allow the user in.

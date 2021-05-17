@@ -17,44 +17,42 @@
 {{!
     Page navbar.
 }}
-<nav class="fixed-top navbar navbar-light bg-white navbar-expand moodle-has-zindex" aria-label="{{#str}}sitemenubar, admin{{/str}}">
+<div class="static_top" style="margin-top:5px;">
+        <nav class="navbar navbar-light bg-white navbar-expand moodle-has-zindex" aria-label="{{#str}}sitemenubar, admin{{/str}}">
 
-        <div data-region="drawer-toggle" class="d-inline-block mr-3">
-            <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1 btn-light bg-gray" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
+                <div data-region="drawer-toggle" class="d-inline-block mr-3">
+                    <button aria-expanded="{{#navdraweropen}}true{{/navdraweropen}}{{^navdraweropen}}false{{/navdraweropen}}" aria-controls="nav-drawer" type="button" class="btn nav-link float-sm-left mr-1 btn-light btn-toggle-dark" data-action="toggle-drawer" data-side="left" data-preference="drawer-open-nav">{{#pix}}i/menubars{{/pix}}<span class="sr-only">{{#str}}sidepanel, core{{/str}}</span></button>
+                </div>
+
+                
+
+                <ul class="navbar-nav d-none d-md-flex">
+                    <!-- custom_menu -->
+                    {{{ output.custom_menu }}}
+                    <!-- page_heading_menu -->
+                    {{{ output.page_heading_menu }}}
+                </ul>
+                <div style="font-size: 1.4rem;"><div class="line_separator"><span class="light_blue_text">ΜΑΘΕ</span> <span class="dark_blue_text">ΤΟ GOV.GR</span></div></div>
+				
+  <div class="about_modal_area" style="flex-grow: 4; text-align:right;">
+                <span id="statistics_modal_link"><a href="#">Μοναδικοί επισκέπτες Απριλίου 306.810</a></span>
         </div>
 
-        <a href="{{{ config.wwwroot }}}" class="navbar-brand {{# output.should_display_navbar_logo }}has-logo{{/ output.should_display_navbar_logo }}
-            {{^ output.should_display_navbar_logo }}
-                d-none d-sm-inline
-            {{/ output.should_display_navbar_logo }}
-                ">
-            {{# output.should_display_navbar_logo }}
-                <span class="logo d-none d-sm-inline">
-                    <img src="{{output.get_compact_logo_url}}" alt="{{sitename}}">
-                </span>
-            {{/ output.should_display_navbar_logo }}
-            <span class="site-name d-none d-md-inline">{{{ sitename }}}</span>
-        </a>
+                <ul class="nav navbar-nav ml-auto">
 
-        <ul class="navbar-nav d-none d-md-flex">
-            <!-- custom_menu -->
-            {{{ output.custom_menu }}}
-            <!-- page_heading_menu -->
-            {{{ output.page_heading_menu }}}
-        </ul>
-        <ul class="nav navbar-nav ml-auto">
-            <li class="d-none d-lg-block">
-                {{{ output.search_box }}}
-            </li>
-            <!-- navbar_plugin_output -->
-            <li class="nav-item">
-                {{{ output.navbar_plugin_output }}}
-            </li>
-            <!-- user_menu -->
-            <li class="nav-item d-flex align-items-center">
-                {{{ output.user_menu }}}
-            </li>
-        </ul>
-        <!-- search_box -->
-</nav>
+                    <!-- user_menu -->
+                    <li class="nav-item d-flex align-items-center">
+                        {{{ output.user_menu }}}
+                    </li>
+                </ul>
+                <!-- search_box -->
+        </nav>
+       
+        {{!
+		<div class="about_modal_area">
+                <span id="about_modal">Τι είναι η επιμορφωτική πύλη <i class="fa fa-star light_blue_text"></i></span>
+        </div>
+		}}
 
+    {{> theme_boost/nav-drawer }}
+</div>

@@ -41,17 +41,17 @@ function booktool_exportimscp_build_package($book, $context) {
 
     $fs = get_file_storage();
 
-    if ($packagefile = $fs->get_file($context->id, 'booktool_exportimscp', 'package', $book->revision, '/', 'imscp.zip')) {
-        return $packagefile;
-    }
+//    if ($packagefile = $fs->get_file($context->id, 'booktool_exportimscp', 'package', $book->revision, '/', 'imscp.zip')) {
+//        return $packagefile;
+//    }
 
     // fix structure and test if chapters present
     if (!book_preload_chapters($book)) {
         print_error('nochapters', 'booktool_exportimscp');
     }
-
     // prepare temp area with package contents
     booktool_exportimscp_prepare_files($book, $context);
+
 
     $packer = get_file_packer('application/zip');
     $areafiles = $fs->get_area_files($context->id, 'booktool_exportimscp', 'temp', $book->revision, "sortorder, itemid, filepath, filename", false);
@@ -249,11 +249,14 @@ function booktool_exportimscp_chapter_content($chapter, $context) {
     $content .= '<html>' . "\n";
     $content .= '<head>' . "\n";
     $content .= '<meta http-equiv="content-type" content="text/html; charset=utf-8" />' . "\n";
-    $content .= '<link rel="stylesheet" type="text/css" href="../css/styles.css" />' . "\n";
+    // GOV.GR
+    $content .= '<meta issubchapter="' . $chapter->subchapter . '" />' . "\n"; // GOV.GR added
+//    $content .= '<link rel="stylesheet" type="text/css" href="../css/styles.css" />' . "\n"; // GOV.GR removed
     $content .= '<title>' . $chaptertitle . '</title>' . "\n";
     $content .= '</head>' . "\n";
     $content .= '<body>' . "\n";
-    $content .= '<h1 id="header">' . $chaptertitle . '</h1>' ."\n";
+    // GOV.GR
+//    $content .= '<h1 id="header">' . $chaptertitle . '</h1>' ."\n";
     $content .= $chaptercontent . "\n";
     $content .= '</body>' . "\n";
     $content .= '</html>' . "\n";

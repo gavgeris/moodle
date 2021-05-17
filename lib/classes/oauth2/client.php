@@ -293,17 +293,52 @@ class client extends \oauth2_client {
      * @return array|false Moodle user fields for the logged in user (or false if request failed)
      */
     public function get_userinfo() {
-        $url = $this->get_issuer()->get_endpoint_url('userinfo');
-        $response = $this->get($url);
+        //$url = $this->get_issuer()->get_endpoint_url('userinfo');
+		$url = $this->get_issuer()->get_endpoint_url('userinfo');
+		
+        $params = array(
+            "user_oauth_approval" =>"true",
+            "scope.read" => "true"
+        );
+		
+		// ------ DEBUG ----------- //
+//        echo "<br/><hr /><strong>get_userinfo:</strong><br/>";
+//		echo "url:<br /><pre>";
+//		print_r($url);
+//		echo "</pre><br/>";
+		// ------------------------ //
+
+		$response = $this->post($url, $params, 'application/xml' );
+		//$response = $this->post( $url, $this->build_post_data($params) );
+		
+		// ------ DEBUG ----------- //
+//		echo "response:<br /><pre>";
+//		var_dump( $response );
+//		echo "</pre>";
+		// ------------------------ //
+
         if (!$response) {
             return false;
         }
+        $response = new \SimpleXMLElement($response); // FOTIS
+        $response = json_encode($response); // FOTIS
+        $response = json_decode($response, TRUE); // FOTIS
+        $response = $response ["userinfo"]["@attributes"];
+        $response = json_encode($response);
+        //die(0);
+
+
         $userinfo = new stdClass();
         try {
             $userinfo = json_decode($response);
         } catch (\Exception $e) {
             return false;
         }
+        // Αν ο χρήστης που κάνει login δεν είναι δημόσιος υπάλληλος τότε η ΓΓΠΣ επιστρέφει JSON με taxid = "null"
+        // Τον κάνω αυτόματα logout για να μπορεί να συνδεθεί ξανά με διαφορετικά στοιχεία
+        if ($userinfo->taxid == "null") {
+            return false;
+        }        // Simple taxisnet login has taxid = null. Don't allow these logins
 
         $map = $this->get_userinfo_mapping();
 

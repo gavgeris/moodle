@@ -75,7 +75,9 @@ function toolbook_importhtml_import_chapters($package, $type, $book, $context, $
                 $chapter->hidden        = 0;
                 $chapter->timecreated   = time();
                 $chapter->timemodified  = time();
-                if (preg_match('/_sub(\/|\.htm)/i', $chapter->importsrc)) { // If filename or directory ends with *_sub treat as subchapters
+                if (preg_match('/_sub(\/|\.htm)/i', $chapter->importsrc) // If filename or directory ends with *_sub treat as subchapters
+                    || toolbook_importhtml_issubchapter($htmlcontent)) // GOV.GR
+                {
                     $chapter->subchapter = 1;
                 } else {
                     $chapter->subchapter = 0;
@@ -219,6 +221,21 @@ function toolbook_importhtml_fix_encoding($html) {
         }
     }
     return iconv('UTF-8', 'UTF-8//IGNORE', $html);
+}
+
+/**
+ * GOV.GR
+ * Determines if this is a subchapter. Searcher for issubchapter ="1" on header meta
+ * <meta issubchapter="1" />
+ * @param string $html html content to convert
+ * @return string html content converted to utf8
+ */
+function toolbook_importhtml_issubchapter($html) {
+    if (preg_match('/<head[^>]*>(.+)<\/head>/is', $html, $matches)) {
+        $head = $matches[1];
+        return preg_match('/issubchapter="1"/is', $head);
+    }
+    return 0;
 }
 
 /**

@@ -57,45 +57,113 @@
 }}
 <nav class="list-group" aria-label="{{firstcollectionlabel}}">
     <ul>
-    {{# flatnavigation }}
-        {{#showdivider}}
-            </ul>
-            </nav>
-            <nav class="list-group mt-1" aria-label="{{get_collectionlabel}}">
-            <ul>
-        {{/showdivider}}
-        {{#action}}
-            <li>
-                <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{action}}}" data-key="{{key}}" data-isexpandable="{{isexpandable}}" data-indent="{{get_indent}}" data-showdivider="{{showdivider}}" data-type="{{type}}" data-nodetype="{{nodetype}}" data-collapse="{{collapse}}" data-forceopen="{{forceopen}}" data-isactive="{{isactive}}" data-hidden="{{hidden}}" data-preceedwithhr="{{preceedwithhr}}" {{#parent.key}}data-parent-key="{{.}}"{{/parent.key}}>
-                    <div class="ml-{{get_indent}}">
-                        <div class="media">
-                            {{#icon.pix}}
-                                <span class="media-left">
-                                    {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
-                                </span>
-                            {{/icon.pix}}
-                            <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">{{{text}}}</span>
-                        </div>
-                    </div>
-                </a>
-            </li>
-        {{/action}}
-        {{^action}}
-            <li>
-                <div class="list-group-item" data-key="{{key}}" data-isexpandable="{{isexpandable}}" data-indent="{{get_indent}}" data-showdivider="{{showdivider}}" data-type="{{type}}" data-nodetype="{{nodetype}}" data-collapse="{{collapse}}" data-forceopen="{{forceopen}}" data-isactive="{{isactive}}" data-hidden="{{hidden}}" data-preceedwithhr="{{preceedwithhr}}" {{#parent.key}}data-parent-key="{{.}}"{{/parent.key}}>
-                    <div class="ml-{{get_indent}}">
-                        <div class="media">
-                            {{#icon.pix}}
-                                <span class="media-left">
-                                    {{#pix}}{{{icon.pix}}}, {{{icon.component}}}, {{{icon.alt}}}{{/pix}}
-                                </span>
-                            {{/icon.pix}}
-                            <span class="media-body">{{{text}}}</span>
-                        </div>
+      <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/?redirect=0">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Αρχική</span>
                     </div>
                 </div>
-            </li>
-        {{/action}}
-    {{/ flatnavigation }}
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=9">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Ενιαία Ψηφιακή Πύλη</span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=10">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Μάθε για τον εμβολιασμό</span>
+                    </div>
+                </div>
+            </a>
+        </li> 
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=5">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Άυλη συνταγογράφηση</span>
+                    </div>
+                </div>
+            </a>
+        </li> 
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=2">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Υπεύθυνη Δήλωση</span>
+                    </div>
+                </div>
+            </a>
+        </li> 
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=3">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Εξουσιοδότηση</span>
+                    </div>
+                </div>
+            </a>
+        </li> 
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=6">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Εγγραφή στο νηπιαγωγείο</span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=7">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Μάθε το GOV</span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=8">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Μάθημα για Διαχειριστές και Συντάκτες στο Εθνικό Μητρώο Διαδικασιών</span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=11">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Μάθε την έκδοση πιστοποιητικών</span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=14">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Μαθε το Εθνικό Μητρώο Επικοινωνίας (ΕΜΕπ)</span>
+                    </div>
+                </div>
+            </a>
+        </li>
+        <li>
+            <a class="list-group-item list-group-item-action {{#isactive}}active{{/isactive}}" href="{{{ config.wwwroot }}}/course/view.php?id=16">
+                <div class="ml-{{get_indent}}">
+                    <div class="media">
+                        <span class="media-body {{#isactive}}font-weight-bold{{/isactive}}">Μαθε το myKepLive</span>
+                    </div>
+                </div>
+            </a>
+        </li>
     </ul>
 </nav>

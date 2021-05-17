@@ -38,13 +38,14 @@ $resendconfirmemail = optional_param('resendconfirmemail', false, PARAM_BOOL);
 // be a security risk. For now we only allow it on Behat sites.
 // If you wants to do the analysis, you may be able to remove the
 // if (BEHAT_SITE_RUNNING).
-if (defined('BEHAT_SITE_RUNNING') && BEHAT_SITE_RUNNING) {
+// GOV.GR
+// Αφαιρώ τον έλεγχο για να μπορεί να δημιουργηθεί Deep Link απο το ΕΜΔ στο Moodle
+//if (defined('BEHAT_SITE_RUNNING') && BEHAT_SITE_RUNNING) {
     $wantsurl    = optional_param('wantsurl', '', PARAM_LOCALURL);   // Overrides $SESSION->wantsurl if given.
     if ($wantsurl !== '') {
         $SESSION->wantsurl = (new moodle_url($wantsurl))->out(false);
     }
-}
-
+//}
 $context = context_system::instance();
 $PAGE->set_url("$CFG->wwwroot/login/index.php");
 $PAGE->set_context($context);
