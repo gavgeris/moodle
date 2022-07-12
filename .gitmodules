@@ -97,9 +97,3 @@
 [submodule "moodle-theme_adaptable"]
 	path = moodle-theme_adaptable
 	url = https://gitlab.com/jezhops/moodle-theme_adaptable.git
-[submodule "theme/etwinning"]
-	path = theme/etwinning
-	url = https://github.com/gavgeris/moodle-theme_etwinning
-[submodule "theme/adaptable"]
-	path = theme/adaptable
-	url = https://gitlab.com/jezhops/moodle-theme_adaptable.git
