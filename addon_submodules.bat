@@ -19,6 +19,7 @@ git submodule add https://github.com/justinhunt/moodle-atto_generico lib/editor/
 git submodule add https://github.com/ndunand/moodle-atto_morebackcolors lib/editor/atto/plugins/morebackcolors
 git submodule add https://github.com/moodle-an-hochschulen/moodle-atto_styles lib/editor/atto/plugins/styles
 git submodule add https://github.com/sharpchi/moodle-atto_templates4u lib/editor/atto/plugins/templates4u
+git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol lib/editor/atto/plugins/autoenrol
 git submodule add https://github.com/doiphode/moodle-tool_clearbackupfiles admin/tool/clearbackupfiles
 git submodule add https://github.com/moodle-an-hochschulen/moodle-tool_redis admin/tool/redis
 git submodule add https://github.com/cellule-tice/moodle-format_collapsibletopics course/format/collapsibletopics
@@ -31,5 +32,3 @@ git submodule add https://github.com/gavgeris/moodle-theme_etwinning theme/etwin
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_boostnavigation local/boostnavigation
 git submodule add https://gitlab.com/adapta/moodle-local_modcustomfields local/modcustomfields
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_staticpage local/staticpage
-git submodule add https://github.com/h5p/moodle-mod_hvp mod/hvp
-git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/autoenrol
