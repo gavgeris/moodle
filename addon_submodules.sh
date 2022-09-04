@@ -33,6 +33,5 @@ git submodule add https://github.com/gavgeris/moodle-theme_etwinning theme/etwin
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_boostnavigation local/boostnavigation
 git submodule add https://gitlab.com/adapta/moodle-local_modcustomfields local/modcustomfields
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_staticpage local/staticpage
-git submodule add https://github.com/h5p/moodle-mod_hvp mod/hvp
 git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/autoenrol
 
