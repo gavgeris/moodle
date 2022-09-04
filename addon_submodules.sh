@@ -2,7 +2,6 @@
 
 git submodule add https://github.com/mdjnelson/moodle-mod_certificate mod/certificate
 git submodule add https://github.com/learnweb/moodle-mod_groupmembers mod/groupmembers
-git submodule add https://github.com/h5p/moodle-mod_hvp mod/hvp
 git submodule add https://github.com/PoetOS/moodle-mod_questionnaire mod/questionnaire
 git submodule add https://github.com/jonof/moodle-block_completion_progress blocks/completion_progress
 git submodule add https://github.com/UniversityofPortland/moodle-block_custom_course_menu blocks/custom_course_menu
@@ -33,5 +32,6 @@ git submodule add https://github.com/gavgeris/moodle-theme_etwinning theme/etwin
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_boostnavigation local/boostnavigation
 git submodule add https://gitlab.com/adapta/moodle-local_modcustomfields local/modcustomfields
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_staticpage local/staticpage
+git submodule add https://github.com/h5p/moodle-mod_hvp mod/hvp
 git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/autoenrol
 
