@@ -1,6 +1,6 @@
 #! /bin/sh
 
-git submodule add https://github.com/mdjnelson/moodle-mod_certificate mod/certificate
+git submodule add https://github.com/gavgeris/moodle-mod_certificate mod/certificate
 git submodule add https://github.com/learnweb/moodle-mod_groupmembers mod/groupmembers
 git submodule add https://github.com/PoetOS/moodle-mod_questionnaire mod/questionnaire
 git submodule add https://github.com/jonof/moodle-block_completion_progress blocks/completion_progress
