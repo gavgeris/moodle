@@ -147,7 +147,7 @@ if ($editform->is_cancelled()) {
         if ($data->allocateby == 'no') {
             continue; // do not allocate users
         }
-        for ($j=$initial_group_members; $j<$userpergrp; $j++) {
+        for ($j=0; $j<$userpergrp-$initial_group_members; $j++) {
             if (empty($users)) {
                 break 2;
             }
