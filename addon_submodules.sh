@@ -23,7 +23,7 @@ git submodule add https://github.com/sharpchi/moodle-atto_templates4u lib/editor
 git submodule add https://github.com/doiphode/moodle-tool_clearbackupfiles admin/tool/clearbackupfiles
 git submodule add https://github.com/moodle-an-hochschulen/moodle-tool_redis admin/tool/redis
 git submodule add https://github.com/cellule-tice/moodle-format_collapsibletopics course/format/collapsibletopics
-git submodule add https://github.com/WisdmLabs/moodle-format_remuiformat course/format/remuiformat
+git submodule add https://github.com/gavgeris/moodle-format_remuiformat.git course/format/remuiformat
 git submodule add https://github.com/gjb2048/moodle-format_topcoll.git course/format/topcoll
 git submodule add https://gitlab.com/jezhops/moodle-theme_adaptable.git theme/adaptable
 git submodule add https://github.com/dbnschools/moodle-theme_fordson theme/fordson
