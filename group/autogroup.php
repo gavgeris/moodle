@@ -141,6 +141,7 @@ if ($editform->is_cancelled()) {
         if ($groupid) {
             $group_members = groups_get_members_by_role($groupid, $courseid);
             $initial_group_members = count($group_members["5"]->users);
+            
         }
 
         $groups[$i]['members'] = array();
