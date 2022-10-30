@@ -1,6 +1,6 @@
 [submodule "mod/certificate"]
-	path = mod/certificate
-	url = https://github.com/mdjnelson/moodle-mod_certificate
+        path = mod/certificate
+        url = https://github.com/gavgeris/moodle-mod_certificate
 [submodule "mod/groupmembers"]
 	path = mod/groupmembers
 	url = https://github.com/learnweb/moodle-mod_groupmembers
@@ -103,3 +103,9 @@
 [submodule "theme/adaptable"]
 	path = theme/adaptable
 	url = https://gitlab.com/jezhops/moodle-theme_adaptable.git
+[submodule "enrol/autoenrol"]
+	path = enrol/autoenrol
+	url = https://github.com/bobopinna/moodle-enrol_autoenrol
+[submodule "local/reusecontent_ws"]
+	path = local/reusecontent_ws
+	url = https://github.com/gavgeris/local_reusecontent_ws.git
