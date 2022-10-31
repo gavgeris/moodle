@@ -1,6 +1,6 @@
 [submodule "mod/certificate"]
-	path = mod/certificate
-	url = https://github.com/mdjnelson/moodle-mod_certificate
+        path = mod/certificate
+        url = https://github.com/gavgeris/moodle-mod_certificate
 [submodule "mod/groupmembers"]
 	path = mod/groupmembers
 	url = https://github.com/learnweb/moodle-mod_groupmembers
@@ -70,9 +70,6 @@
 [submodule "course/format/collapsibletopics"]
 	path = course/format/collapsibletopics
 	url = https://github.com/cellule-tice/moodle-format_collapsibletopics
-[submodule "course/format/remuiformat"]
-	path = course/format/remuiformat
-	url = https://github.com/WisdmLabs/moodle-format_remuiformat
 [submodule "course/format/topcoll"]
 	path = course/format/topcoll
 	url = https://github.com/gjb2048/moodle-format_topcoll.git
@@ -103,3 +100,12 @@
 [submodule "theme/adaptable"]
 	path = theme/adaptable
 	url = https://gitlab.com/jezhops/moodle-theme_adaptable.git
+[submodule "enrol/autoenrol"]
+	path = enrol/autoenrol
+	url = https://github.com/bobopinna/moodle-enrol_autoenrol
+[submodule "local/reusecontent_ws"]
+	path = local/reusecontent_ws
+	url = https://github.com/gavgeris/local_reusecontent_ws.git
+[submodule "course/format/remuiformat"]
+	path = course/format/remuiformat
+	url = https://github.com/gavgeris/moodle-format_remuiformat
