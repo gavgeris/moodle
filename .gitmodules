@@ -106,3 +106,9 @@
 [submodule "local/reusecontent_ws"]
 	path = local/reusecontent_ws
 	url = https://github.com/gavgeris/local_reusecontent_ws.git
+<<<<<<< HEAD
+=======
+[submodule "course/format/remuiformat"]
+	path = course/format/remuiformat
+	url = https://github.com/gavgeris/moodle-format_remuiformat
+>>>>>>> 5aea2ba391673dc882db31d39058b41bba836105
