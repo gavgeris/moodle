@@ -10,7 +10,7 @@ FROM
   mdl_course_categories mcc,
   mdl_groups mg,
   mdl_groups_members mgm
-WHERE mcc.name LIKE '2021-22' 
+WHERE mcc.name LIKE '2022-23'
   AND mc.category = mcc.id
   AND ma.course = mc.id 
   AND mas.assignment = ma.id 

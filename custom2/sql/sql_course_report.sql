@@ -61,7 +61,7 @@ FROM
     )
     AND mg.courseid = c.instanceid
 	AND mg.courseid = ?) table1 
-WHERE mcc.name LIKE '2021-22' 
+WHERE mcc.name LIKE '2022-23'
   AND mc.category = mcc.id
   AND ma.course = mc.id 
   AND mas.assignment = ma.id 
