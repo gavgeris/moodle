@@ -136,11 +136,19 @@ if ($editform->is_cancelled()) {
     for ($i=0; $i<$numgrps; $i++) {
         $groups[$i] = array();
         $groups[$i]['name']    = groups_parse_name(trim($data->namingscheme), $i);
+        $groupid = groups_get_group_by_name($courseid,  $groups[$i]['name']);
+        $initial_group_members = 0;
+        if ($groupid) {
+            $group_members = groups_get_members_by_role($groupid, $courseid);
+            $initial_group_members = count($group_members["5"]->users);
+
+        }
+
         $groups[$i]['members'] = array();
         if ($data->allocateby == 'no') {
             continue; // do not allocate users
         }
-        for ($j=0; $j<$userpergrp; $j++) {
+        for ($j=0; $j<$userpergrp-$initial_group_members; $j++) {
             if (empty($users)) {
                 break 2;
             }
@@ -176,12 +184,13 @@ if ($editform->is_cancelled()) {
         $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
         foreach ($groups as $group) {
             $line = array();
-            if (groups_get_group_by_name($courseid, $group['name'])) {
-                $line[] = '<span class="notifyproblem">'.get_string('groupnameexists', 'group', $group['name']).'</span>';
-                $error = get_string('groupnameexists', 'group', $group['name']);
-            } else {
+            // AVGERIS
+//            if (groups_get_group_by_name($courseid, $group['name'])) {
+//                $line[] = '<span class="notifyproblem">'.get_string('groupnameexists', 'group', $group['name']).'</span>';
+//                $error = get_string('groupnameexists', 'group', $group['name']);
+//            } else {
                 $line[] = $group['name'];
-            }
+ //           }
             if ($data->allocateby != 'no') {
                 $unames = array();
                 foreach ($group['members'] as $user) {
@@ -225,17 +234,21 @@ if ($editform->is_cancelled()) {
 
         // Save the groups data
         foreach ($groups as $key=>$group) {
-            if (groups_get_group_by_name($courseid, $group['name'])) {
-                $error = get_string('groupnameexists', 'group', $group['name']);
-                $failed = true;
-                break;
+            $groupid = groups_get_group_by_name($courseid, $group['name']);
+            // AVGERIS
+//            if (groups_get_group_by_name($courseid, $group['name'])) {
+//                $error = get_string('groupnameexists', 'group', $group['name']);
+//                $failed = true;
+//                break;
+//            }
+            if ($groupid == null) { // AVGERIS
+                $newgroup = new stdClass();
+                $newgroup->courseid = $data->courseid;
+                $newgroup->name = $group['name'];
+                $newgroup->enablemessaging = $data->enablemessaging ?? 0;
+                $groupid = groups_create_group($newgroup);
+                $createdgroups[] = $groupid;
             }
-            $newgroup = new stdClass();
-            $newgroup->courseid = $data->courseid;
-            $newgroup->name     = $group['name'];
-            $newgroup->enablemessaging = $data->enablemessaging ?? 0;
-            $groupid = groups_create_group($newgroup);
-            $createdgroups[] = $groupid;
             foreach($group['members'] as $user) {
                 groups_add_member($groupid, $user->id);
             }
