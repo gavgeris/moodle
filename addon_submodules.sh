@@ -35,5 +35,5 @@ git submodule add https://github.com/moodle-an-hochschulen/moodle-local_staticpa
 #git submodule add https://github.com/h5p/moodle-mod_hvp mod/hvp
 git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/autoenrol
 git submodule add https://github.com/moodleworkplace/moodle-mod_coursecertificate mod/coursecertificate
-git submodule add https://github.com/moodleworkplace/moodle-tool_certificate mod/coursecertificate
+git submodule add https://github.com/moodleworkplace/moodle-tool_certificate admin/tool/certificate
 
