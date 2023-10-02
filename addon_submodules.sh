@@ -34,4 +34,6 @@ git submodule add https://gitlab.com/adapta/moodle-local_modcustomfields local/m
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_staticpage local/staticpage
 #git submodule add https://github.com/h5p/moodle-mod_hvp mod/hvp
 git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/autoenrol
+git submodule add https://github.com/moodleworkplace/moodle-mod_coursecertificate mod/coursecertificate
+git submodule add https://github.com/moodleworkplace/moodle-tool_certificate mod/coursecertificate
 
