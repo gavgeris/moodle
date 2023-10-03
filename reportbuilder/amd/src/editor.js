@@ -23,7 +23,9 @@
 
 "use strict";
 
+import $ from 'jquery';
 import 'core/inplace_editable';
+import {addIconToContainer} from 'core/loadingicon';
 import Notification from 'core/notification';
 import Pending from 'core/pending';
 import Templates from 'core/templates';
@@ -67,16 +69,13 @@ export const init = () => {
             const pendingPromise = new Pending('core_reportbuilder/reports:get');
             const toggledEditMode = toggleEditViewMode.dataset.editMode !== "1";
 
-            let customjs = '';
-
-            getReport(reportElement.dataset.reportId, toggledEditMode)
-                .then(response => {
-                    customjs = response.javascript;
-                    return Templates.render('core_reportbuilder/local/dynamictabs/editor', response);
-                })
-                .then((html, js) => {
-                    return Templates.replaceNode(reportElement, html, js + customjs);
-                })
+            addIconToContainer(toggleEditViewMode)
+                .then(() => getReport(reportElement.dataset.reportId, toggledEditMode))
+                .then(response => Promise.all([
+                    $.parseHTML(response.javascript, null, true).map(node => node.innerHTML).join("\n"),
+                    Templates.renderForPromise('core_reportbuilder/local/dynamictabs/editor', response),
+                ]))
+                .then(([responseJs, {html, js}]) => Templates.replaceNode(reportElement, html, js + responseJs))
                 .then(() => pendingPromise.resolve())
                 .catch(Notification.exception);
         }

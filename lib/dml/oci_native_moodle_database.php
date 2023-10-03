@@ -47,7 +47,7 @@ class oci_native_moodle_database extends moodle_database {
     /** @var Default value initialised in connect method, we need the driver to be present.*/
     private $commit_status = null;
 
-    /** @var To handle oci driver default verbosity.*/
+    /** @var null|int To handle oci driver default verbosity.*/
     private $last_error_reporting;
     /** @var To store unique_session_id. Needed for temp tables unique naming.*/
     private $unique_session_id;
@@ -689,15 +689,13 @@ class oci_native_moodle_database extends moodle_database {
         if (is_bool($value)) { // Always, convert boolean to int
             $value = (int)$value;
 
-        } else if ($column->meta_type == 'B') { // BLOB detected, we return 'blob' array instead of raw value to allow
-            if (!is_null($value)) {             // binding/executing code later to know about its nature
-                $value = array('blob' => $value);
-            }
+        } else if ($column->meta_type == 'B' && !is_null($value)) {
+            // Not null BLOB detected, we return 'blob' array instead for later handing on binding.
+            $value = array('blob' => $value);
 
-        } else if ($column->meta_type == 'X' && strlen($value) > 4000) { // CLOB detected (>4000 optimisation), we return 'clob'
-            if (!is_null($value)) {                                      // array instead of raw value to allow binding/
-                $value = array('clob' => (string)$value);                // executing code later to know about its nature
-            }
+        } else if ($column->meta_type == 'X' && !is_null($value) && strlen($value) > 4000) {
+            // Not null CLOB detected (>4000 optimisation), we return 'clob' array instead for later handing on binding.
+            $value = array('clob' => (string)$value);
 
         } else if ($value === '') {
             if ($column->meta_type == 'I' or $column->meta_type == 'F' or $column->meta_type == 'N') {
@@ -962,7 +960,7 @@ class oci_native_moodle_database extends moodle_database {
                     // passed in an arbitrary sql (not processed by normalise_value() ever,
                     // and let's handle it as such. This will provide proper binding of CLOBs in
                     // conditions and other raw SQLs not covered by the above function.
-                    if (strlen($value) > 4000) {
+                    if (!is_null($value) && strlen($value) > 4000) {
                         $lob = oci_new_descriptor($this->oci, OCI_DTYPE_LOB);
                         if ($descriptors === null) {
                             throw new coding_exception('moodle_database::bind_params() $descriptors not specified for clob');
@@ -1357,7 +1355,7 @@ class oci_native_moodle_database extends moodle_database {
     /**
      * Update record in database, as fast as possible, no safety checks, lobs not supported.
      * @param string $table name
-     * @param mixed $params data record as object or array
+     * @param stdClass|array $params data record as object or array
      * @param bool true means repeated updates expected
      * @return bool true
      * @throws dml_exception A DML specific exception is thrown for any errors.
@@ -1407,7 +1405,8 @@ class oci_native_moodle_database extends moodle_database {
      * specify the record to update
      *
      * @param string $table The database table to be checked against.
-     * @param object $dataobject An object with contents equal to fieldname=>fieldvalue. Must have an entry for 'id' to map to the table specified.
+     * @param stdClass|array $dataobject An object with contents equal to fieldname=>fieldvalue.
+     *        Must have an entry for 'id' to map to the table specified.
      * @param bool true means repeated updates expected
      * @return bool true
      * @throws dml_exception A DML specific exception is thrown for any errors.
@@ -1554,6 +1553,16 @@ class oci_native_moodle_database extends moodle_database {
         return 'MOD(' . $int1 . ', ' . $int2 . ')';
     }
 
+    /**
+     * Return SQL for casting to char of given field/expression
+     *
+     * @param string $field Table field or SQL expression to be cast
+     * @return string
+     */
+    public function sql_cast_to_char(string $field): string {
+        return "TO_CHAR({$field})";
+    }
+
     public function sql_cast_char2int($fieldname, $text=false) {
         if (!$text) {
             return ' CAST(' . $fieldname . ' AS INT) ';
@@ -1641,6 +1650,19 @@ class oci_native_moodle_database extends moodle_database {
     public function sql_group_concat(string $field, string $separator = ', ', string $sort = ''): string {
         $fieldsort = $sort ?: '1';
         return "LISTAGG({$field}, '{$separator}') WITHIN GROUP (ORDER BY {$fieldsort})";
+    }
+
+    /**
+     * Returns the SQL text to be used to order by columns, standardising the return
+     * pattern of null values across database types to sort nulls first when ascending
+     * and last when descending.
+     *
+     * @param string $fieldname The name of the field we need to sort by.
+     * @param int $sort An order to sort the results in.
+     * @return string The piece of SQL code to be used in your statement.
+     */
+    public function sql_order_by_null(string $fieldname, int $sort = SORT_ASC): string {
+        return parent::sql_order_by_null($fieldname, $sort) . ' NULLS ' . ($sort == SORT_ASC ? 'FIRST' : 'LAST');
     }
 
     /**

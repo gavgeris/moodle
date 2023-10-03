@@ -81,7 +81,7 @@ if ($id) {
     // Editing course.
     if ($id == SITEID){
         // Don't allow editing of  'site course' using this from.
-        print_error('cannoteditsiteform');
+        throw new \moodle_exception('cannoteditsiteform');
     }
 
     // Login to the course and retrieve also all fields defined by course format.
@@ -235,7 +235,7 @@ if (!empty($course->id)) {
     $PAGE->navbar->add(get_string('coursemgmt', 'admin'), $managementurl);
 
     $pagedesc = $straddnewcourse;
-    $title = "$site->shortname: $straddnewcourse";
+    $title = $straddnewcourse;
     $fullname = format_string($category->name);
     $PAGE->navbar->add($pagedesc);
 }

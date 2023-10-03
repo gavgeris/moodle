@@ -710,15 +710,24 @@ class manager_test extends \advanced_testcase {
         $grouptwo = $this->getDataGenerator()->create_group(['courseid' => $course->id]);
         $this->getDataGenerator()->create_group_member(['groupid' => $grouptwo->id, 'userid' => $usertwo->id]);
 
+        // User three in no group.
+        $userthree = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        // User four in a non-participation group.
+        $userfour = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $groupthree = $this->getDataGenerator()->create_group(['courseid' => $course->id, 'participation' => 0]);
+        $this->getDataGenerator()->create_group_member(['groupid' => $groupthree->id, 'userid' => $userfour->id]);
+
         $activity = $this->getDataGenerator()->create_module('h5pactivity', ['course' => $course]);
         $manager = manager::create_from_instance($activity);
 
-        // Admin user can view all participants.
+        // Admin user can view all participants (any group and none).
         $usersjoin = $manager->get_active_users_join(true, 0);
         $users = $DB->get_fieldset_sql("SELECT u.username FROM {user} u {$usersjoin->joins} WHERE {$usersjoin->wheres}",
             $usersjoin->params);
 
-        $this->assertEqualsCanonicalizing([$teacher->username, $userone->username, $usertwo->username], $users);
+        $this->assertEqualsCanonicalizing(
+                [$teacher->username, $userone->username, $usertwo->username, $userthree->username, $userfour->username], $users);
 
         // Switch to teacher, who cannot view all participants.
         $this->setUser($teacher);
@@ -735,6 +744,41 @@ class manager_test extends \advanced_testcase {
             $usersjoin->params);
 
         $this->assertEqualsCanonicalizing([$teacher->username, $userone->username], $users);
+    }
+
+    /**
+     * Test getting active users join where there are no roles with 'mod/h5pactivity:reviewattempts' capability
+     */
+    public function test_get_active_users_join_no_reviewers(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+
+        $course = $this->getDataGenerator()->create_course();
+        $activity = $this->getDataGenerator()->create_module('h5pactivity', ['course' => $course]);
+        $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
+
+        $manager = manager::create_from_instance($activity);
+
+        // By default manager and editingteacher can review attempts, prohibit both.
+        $rolemanager = $DB->get_field('role', 'id', ['shortname' => 'manager']);
+        role_change_permission($rolemanager, $manager->get_context(), 'mod/h5pactivity:reviewattempts', CAP_PROHIBIT);
+
+        $roleeditingteacher = $DB->get_field('role', 'id', ['shortname' => 'editingteacher']);
+        role_change_permission($roleeditingteacher, $manager->get_context(), 'mod/h5pactivity:reviewattempts', CAP_PROHIBIT);
+
+        // Generate users join SQL to find matching users.
+        $usersjoin = $manager->get_active_users_join(true);
+        $usernames = $DB->get_fieldset_sql(
+            "SELECT u.username
+               FROM {user} u
+                    {$usersjoin->joins}
+              WHERE {$usersjoin->wheres}",
+            $usersjoin->params
+        );
+
+        $this->assertEquals([$user->username], $usernames);
     }
 
     /**

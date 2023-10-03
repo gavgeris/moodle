@@ -112,6 +112,7 @@ class behat_partial_named_selector extends \Behat\Mink\Selector\PartialNamedSele
         'menuitem' => 'menuitem',
         'optgroup' => 'optgroup',
         'option' => 'option',
+        'option_role' => 'option_role',
         'question' => 'question',
         'radio' => 'radio',
         'region' => 'region',
@@ -147,7 +148,7 @@ XPATH
     descendant::*[
         contains(concat(' ', normalize-space(@class), ' '), ' dropdown-toggle ')
             and
-        contains(normalize-space(.), %locator%)
+        (contains(normalize-space(.), %locator%) or descendant::*[%titleMatch%])
     ]
 ]
 XPATH
@@ -217,6 +218,10 @@ XPATH
 XPATH
         , 'menuitem' => <<<XPATH
 .//*[@role='menuitem'][%titleMatch% or %ariaLabelMatch% or text()[contains(., %locator%)]]
+XPATH
+    , 'option_role' => <<<XPATH
+.//*[@role='option'][%titleMatch% or %ariaLabelMatch% or text()[contains(., %locator%)]] |
+.//*[@role='option']/following-sibling::label[contains(., %locator%)]/preceding-sibling::input
 XPATH
         , 'question' => <<<XPATH
 .//div[contains(concat(' ', normalize-space(@class), ' '), ' que ')]
@@ -291,6 +296,11 @@ XPATH
             'date_time' => <<<XPATH
 .//fieldset[(%idMatch% or ./legend[%exactTagTextMatch%]) and (@data-fieldtype='date' or @data-fieldtype='date_time')]
 XPATH
+        ,
+            'select_menu' => <<<XPATH
+//*[@role='combobox'][@aria-labelledby = //label[contains(normalize-space(string(.)), %locator%)]/@id]
+XPATH
+        ,
         ],
     ];
 

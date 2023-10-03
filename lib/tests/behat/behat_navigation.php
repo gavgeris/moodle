@@ -620,8 +620,8 @@ class behat_navigation extends behat_base {
         $dividercount = substr_count($page, ' > ');
         if ($dividercount === 0) {
             return ['core', $page];
-        } else if ($dividercount === 1) {
-            list($component, $name) = explode(' > ', $page);
+        } else if ($dividercount >= 1) {
+            [$component, $name] = explode(' > ', $page, 2);
             if ($component === 'core') {
                 throw new coding_exception('Do not specify the component "core > ..." for core pages.');
             }
@@ -725,6 +725,12 @@ class behat_navigation extends behat_base {
             case 'Admin notifications':
                 return new moodle_url('/admin/');
 
+            case 'My private files':
+                return new moodle_url('/user/files.php');
+
+            case 'System logs report':
+                return new moodle_url('/report/log/index.php');
+
             default:
                 throw new Exception('Unrecognised core page type "' . $name . '."');
         }
@@ -736,7 +742,7 @@ class behat_navigation extends behat_base {
      * Recognised page names are:
      * | Page type                  | Identifier meaning        | description                          |
      * | Category                   | category idnumber         | List of courses in that category.    |
-     * | Course                     | course shortname          | Main course home page                |
+     * | Course                     | course shortname          | Main course home pag                 |
      * | Course editing             | course shortname          | Edit settings page for the course    |
      * | Activity                   | activity idnumber         | Start page for that activity         |
      * | Activity editing           | activity idnumber         | Edit settings page for that activity |
@@ -763,8 +769,6 @@ class behat_navigation extends behat_base {
      * @throws Exception with a meaningful error message if the specified page cannot be found.
      */
     protected function resolve_core_page_instance_url(string $type, string $identifier): moodle_url {
-        global $DB;
-
         $type = strtolower($type);
 
         switch ($type) {
@@ -920,9 +924,8 @@ class behat_navigation extends behat_base {
      * @return void
      */
     public function i_am_on_course_homepage($coursefullname) {
-        global $DB;
-        $course = $DB->get_record("course", array("fullname" => $coursefullname), 'id', MUST_EXIST);
-        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
+        $courseid = $this->get_course_id($coursefullname);
+        $url = new moodle_url('/course/view.php', ['id' => $courseid]);
         $this->execute('behat_general::i_visit', [$url]);
     }
 
@@ -944,24 +947,20 @@ class behat_navigation extends behat_base {
      * @param string $onoroff Whehter to switch editing on, or off.
      */
     public function i_am_on_course_homepage_with_editing_mode_set_to(string $coursefullname, string $onoroff): void {
-        global $DB;
-
-        $course = $DB->get_record("course", array("fullname" => $coursefullname), 'id', MUST_EXIST);
-        $url = new moodle_url('/course/view.php', ['id' => $course->id]);
-
-        // Visit the course page.
-        $this->execute('behat_general::i_visit', [$url]);
-
-        switch ($onoroff) {
-            case 'on':
-                $this->execute('behat_navigation::i_turn_editing_mode_on');
-                break;
-            case 'off':
-                $this->execute('behat_navigation::i_turn_editing_mode_off');
-                break;
-            default:
-                throw new \coding_exception("Unknown editing mode '{$onoroff}'. Accepted values are 'on' and 'off'");
+        if ($onoroff !== 'on' && $onoroff !== 'off') {
+            throw new coding_exception("Unknown editing mode '{$onoroff}'. Accepted values are 'on' and 'off'");
         }
+
+        $courseid = $this->get_course_id($coursefullname);
+        $context = context_course::instance($courseid);
+        $courseurl = new moodle_url('/course/view.php', ['id' => $courseid]);
+
+        $editmodeurl = new moodle_url('/editmode.php', [
+            'context' => $context->id,
+            'pageurl' => $courseurl->out(true),
+            'setmode' => ($onoroff === 'on' ? 1 : 0),
+        ]);
+        $this->execute('behat_general::i_visit', [$editmodeurl]);
     }
 
     /**

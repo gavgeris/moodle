@@ -43,7 +43,7 @@ class core_string_manager_standard implements core_string_manager {
     protected $cache;
     /** @var int get_string() counter */
     protected $countgetstring = 0;
-    /** @var bool use disk cache */
+    /** @var array use disk cache */
     protected $translist;
     /** @var array language aliases to use in the language selector */
     protected $transaliases = [];
@@ -394,7 +394,7 @@ class core_string_manager_standard implements core_string_manager {
                 $normcomponent = $pluginname ? ($plugintype . '_' . $pluginname) : $plugintype;
                 debugging("String [{$identifier},{$normcomponent}] is deprecated. ".
                     'Either you should no longer be using that string, or the string has been incorrectly deprecated, in which case you should report this as a bug. '.
-                    'Please refer to https://docs.moodle.org/dev/String_deprecation', DEBUG_DEVELOPER);
+                    'Please refer to https://moodledev.io/general/projects/api/string-deprecation', DEBUG_DEVELOPER);
             }
         }
 
@@ -526,7 +526,7 @@ class core_string_manager_standard implements core_string_manager {
         $cachekey = 'list_'.$this->get_key_suffix();
         $cachedlist = $this->menucache->get($cachekey);
         if ($cachedlist !== false) {
-            // The cache content is invalid.
+            // The cache content is valid.
             if ($returnall or empty($this->translist)) {
                 return $cachedlist;
             }

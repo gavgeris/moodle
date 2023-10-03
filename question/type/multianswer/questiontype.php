@@ -146,7 +146,6 @@ class qtype_multianswer extends question_type {
             question_bank::get_qtype($wrapped->qtype)->get_question_options($wrapped);
             // For wrapped questions the maxgrade is always equal to the defaultmark,
             // there is no entry in the question_instances table for them.
-            $wrapped->maxmark = $wrapped->defaultmark;
             $wrapped->category = $question->categoryobject->id;
             $question->options->questions[$sequence[$wrapped->id]] = $wrapped;
         }
@@ -281,7 +280,7 @@ class qtype_multianswer extends question_type {
         parent::initialise_question_instance($question, $questiondata);
 
         $bits = preg_split('/\{#(\d+)\}/', $question->questiontext,
-                null, PREG_SPLIT_DELIM_CAPTURE);
+                -1, PREG_SPLIT_DELIM_CAPTURE);
         $question->textfragments[0] = array_shift($bits);
         $i = 1;
         while (!empty($bits)) {
@@ -303,7 +302,7 @@ class qtype_multianswer extends question_type {
                 }
             }
             $question->subquestions[$key] = question_bank::make_question($subqdata);
-            $question->subquestions[$key]->maxmark = $subqdata->defaultmark;
+            $question->subquestions[$key]->defaultmark = $subqdata->defaultmark;
             if (isset($subqdata->options->layout)) {
                 $question->subquestions[$key]->layout = $subqdata->options->layout;
             }
@@ -314,11 +313,18 @@ class qtype_multianswer extends question_type {
         $fractionsum = 0;
         $fractionmax = 0;
         foreach ($questiondata->options->questions as $key => $subqdata) {
+            if ($subqdata->qtype == 'subquestion_replacement') {
+                continue;
+            }
             $fractionmax += $subqdata->defaultmark;
             $fractionsum += question_bank::get_qtype(
                     $subqdata->qtype)->get_random_guess_score($subqdata);
         }
-        return $fractionsum / $fractionmax;
+        if ($fractionmax > question_utils::MARK_TOLERANCE) {
+            return $fractionsum / $fractionmax;
+        } else {
+            return null;
+        }
     }
 
     public function move_files($questionid, $oldcontextid, $newcontextid) {
@@ -501,7 +507,7 @@ function qtype_multianswer_extract_question($text) {
             $wrapped->shuffleanswers = 1;
             $wrapped->layout = qtype_multichoice_base::LAYOUT_HORIZONTAL;
         } else {
-            print_error('unknownquestiontype', 'question', '', $answerregs[2]);
+            throw new \moodle_exception('unknownquestiontype', 'question', '', $answerregs[2]);
             return false;
         }
 

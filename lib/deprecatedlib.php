@@ -414,7 +414,7 @@ function update_log_display_entry() {
 }
 
 /**
- * @deprecated use the text formatting in a standard way instead (http://docs.moodle.org/dev/Output_functions)
+ * @deprecated use the text formatting in a standard way instead (https://moodledev.io/docs/apis/subsystems/output#output-functions)
  *             this was abused mostly for embedding of attachments
  */
 function filter_text() {
@@ -664,7 +664,7 @@ function groups_course_module_visible() {
  */
 function error() {
     throw new coding_exception('notlocalisederrormessage', 'error', $link, $message, 'error() is a removed, please call
-            print_error() instead of error()');
+            throw new \moodle_exception() instead of error()');
 }
 
 
@@ -2770,121 +2770,20 @@ function report_insights_context_insights(\context $context) {
 }
 
 /**
- * Retrieve all metadata for the requested modules
- *
- * @deprecated since 3.9.
- * @param object $course The Course
- * @param array $modnames An array containing the list of modules and their
- * names
- * @param int $sectionreturn The section to return to
- * @return array A list of stdClass objects containing metadata about each
- * module
+ * @deprecated since 3.9
  */
-function get_module_metadata($course, $modnames, $sectionreturn = null) {
-    global $OUTPUT;
-
-    debugging('get_module_metadata is deprecated. Please use \core_course\local\service\content_item_service instead.');
-
-    // get_module_metadata will be called once per section on the page and courses may show
-    // different modules to one another
-    static $modlist = array();
-    if (!isset($modlist[$course->id])) {
-        $modlist[$course->id] = array();
-    }
-
-    $return = array();
-    $urlbase = new moodle_url('/course/mod.php', array('id' => $course->id, 'sesskey' => sesskey()));
-    if ($sectionreturn !== null) {
-        $urlbase->param('sr', $sectionreturn);
-    }
-    foreach($modnames as $modname => $modnamestr) {
-        if (!course_allowed_module($course, $modname)) {
-            continue;
-        }
-        if (isset($modlist[$course->id][$modname])) {
-            // This module is already cached
-            $return += $modlist[$course->id][$modname];
-            continue;
-        }
-        $modlist[$course->id][$modname] = array();
-
-        // Create an object for a default representation of this module type in the activity chooser. It will be used
-        // if module does not implement callback get_shortcuts() and it will also be passed to the callback if it exists.
-        $defaultmodule = new stdClass();
-        $defaultmodule->title = $modnamestr;
-        $defaultmodule->name = $modname;
-        $defaultmodule->link = new moodle_url($urlbase, array('add' => $modname));
-        $defaultmodule->icon = $OUTPUT->pix_icon('icon', '', $defaultmodule->name, array('class' => 'icon'));
-        $sm = get_string_manager();
-        if ($sm->string_exists('modulename_help', $modname)) {
-            $defaultmodule->help = get_string('modulename_help', $modname);
-            if ($sm->string_exists('modulename_link', $modname)) {  // Link to further info in Moodle docs.
-                $link = get_string('modulename_link', $modname);
-                $linktext = get_string('morehelp');
-                $defaultmodule->help .= html_writer::tag('div',
-                    $OUTPUT->doc_link($link, $linktext, true), array('class' => 'helpdoclink'));
-            }
-        }
-        $defaultmodule->archetype = plugin_supports('mod', $modname, FEATURE_MOD_ARCHETYPE, MOD_ARCHETYPE_OTHER);
-
-        // Each module can implement callback modulename_get_shortcuts() in its lib.php and return the list
-        // of elements to be added to activity chooser.
-        $items = component_callback($modname, 'get_shortcuts', array($defaultmodule), null);
-        if ($items !== null) {
-            foreach ($items as $item) {
-                // Add all items to the return array. All items must have different links, use them as a key in the return array.
-                if (!isset($item->archetype)) {
-                    $item->archetype = $defaultmodule->archetype;
-                }
-                if (!isset($item->icon)) {
-                    $item->icon = $defaultmodule->icon;
-                }
-                // If plugin returned the only one item with the same link as default item - cache it as $modname,
-                // otherwise append the link url to the module name.
-                $item->name = (count($items) == 1 &&
-                    $item->link->out() === $defaultmodule->link->out()) ? $modname : $modname . ':' . $item->link;
-
-                // If the module provides the helptext property, append it to the help text to match the look and feel
-                // of the default course modules.
-                if (isset($item->help) && isset($item->helplink)) {
-                    $linktext = get_string('morehelp');
-                    $item->help .= html_writer::tag('div',
-                        $OUTPUT->doc_link($item->helplink, $linktext, true), array('class' => 'helpdoclink'));
-                }
-                $modlist[$course->id][$modname][$item->name] = $item;
-            }
-            $return += $modlist[$course->id][$modname];
-            // If get_shortcuts() callback is defined, the default module action is not added.
-            // It is a responsibility of the callback to add it to the return value unless it is not needed.
-            continue;
-        }
-
-        // The callback get_shortcuts() was not found, use the default item for the activity chooser.
-        $modlist[$course->id][$modname][$modname] = $defaultmodule;
-        $return[$modname] = $defaultmodule;
-    }
-
-    core_collator::asort_objects_by_property($return, 'title');
-    return $return;
+function get_module_metadata() {
+    throw new coding_exception(
+        'get_module_metadata() has been removed. Please use \core_course\local\service\content_item_service instead.');
 }
 
 /**
- * Runs a single cron task. This function assumes it is displaying output in pseudo-CLI mode.
- *
- * The function will fail if the task is disabled.
- *
- * Warning: Because this function closes the browser session, it may not be safe to continue
- * with other processing (other than displaying the rest of the page) after using this function!
- *
  * @deprecated since Moodle 3.9 MDL-63580. Please use the \core\task\manager::run_from_cli($task).
- * @todo final deprecation. To be removed in Moodle 4.1 MDL-63594.
- * @param \core\task\scheduled_task $task Task to run
- * @return bool True if cron run successful
  */
-function cron_run_single_task(\core\task\scheduled_task $task) {
-    debugging('cron_run_single_task() is deprecated. Please use \\core\task\manager::run_from_cli() instead.',
-        DEBUG_DEVELOPER);
-    return \core\task\manager::run_from_cli($task);
+function cron_run_single_task() {
+    throw new coding_exception(
+        'cron_run_single_task() has been removed. Please use \\core\task\manager::run_from_cli() instead.'
+    );
 }
 
 /**
@@ -2939,7 +2838,7 @@ function cron_execute_plugin_type($plugintype, $description = null) {
 
         mtrace('Processing cron function for ' . $component . '...');
         debugging("Use of legacy cron is deprecated ($cronfunction). Please use scheduled tasks.", DEBUG_DEVELOPER);
-        cron_trace_time_and_memory();
+        \core\cron::trace_time_and_memory();
         $pre_dbqueries = $DB->perf_get_queries();
         $pre_time = microtime(true);
 
@@ -3289,19 +3188,46 @@ function user_get_participants($courseid, $groupid, $accesssince, $roleid, $enro
 }
 
 /**
- * Returns the list of full course categories to be used in html_writer::select()
- *
- * Calls {@see core_course_category::make_categories_list()} to build the list.
- *
+ * @deprecated Since Moodle 3.9. MDL-65835
+ */
+function plagiarism_save_form_elements() {
+    throw new coding_exception(
+        'Function plagiarism_save_form_elements() has been removed. ' .
+        'Please use {plugin name}_coursemodule_edit_post_actions() instead.'
+    );
+}
+
+/**
+ * @deprecated Since Moodle 3.9. MDL-65835
+ */
+function plagiarism_get_form_elements_module() {
+    throw new coding_exception(
+        'Function plagiarism_get_form_elements_module() has been removed. ' .
+        'Please use {plugin name}_coursemodule_standard_elements() instead.'
+    );
+}
+
+
+/**
  * @deprecated since Moodle 3.10
- * @todo This will be finally removed for Moodle 4.2 as part of MDL-69124.
- * @return array array mapping course category id to the display name
  */
 function make_categories_options() {
-    $deprecatedtext = __FUNCTION__ . '() is deprecated. Please use \core_course_category::make_categories_list() instead.';
-    debugging($deprecatedtext, DEBUG_DEVELOPER);
+    throw new coding_exception(__FUNCTION__ . '() has been removed. ' .
+        'Please use \core_course_category::make_categories_list() instead.');
+}
 
-    return core_course_category::make_categories_list('', 0, ' / ');
+/**
+ * @deprecated since 3.10
+ */
+function message_count_unread_messages() {
+    throw new coding_exception('message_count_unread_messages has been removed.');
+}
+
+/**
+ * @deprecated since 3.10
+ */
+function serialise_tool_proxy() {
+    throw new coding_exception('serialise_tool_proxy has been removed.');
 }
 
 /**
@@ -3743,4 +3669,174 @@ function get_array_of_activities(int $courseid, bool $usecache = false): array {
     debugging(__FUNCTION__ . '() is deprecated. ' . 'Please use course_modinfo::get_array_of_activities() instead.',
         DEBUG_DEVELOPER);
     return course_modinfo::get_array_of_activities(get_course($courseid), $usecache);
+}
+
+/**
+ * Abort execution by throwing of a general exception,
+ * default exception handler displays the error message in most cases.
+ *
+ * @deprecated since Moodle 4.1
+ * @todo MDL-74484 Final deprecation in Moodle 4.5.
+ * @param string $errorcode The name of the language string containing the error message.
+ *      Normally this should be in the error.php lang file.
+ * @param string $module The language file to get the error message from.
+ * @param string $link The url where the user will be prompted to continue.
+ *      If no url is provided the user will be directed to the site index page.
+ * @param object $a Extra words and phrases that might be required in the error string
+ * @param string $debuginfo optional debugging information
+ * @return void, always throws exception!
+ */
+function print_error($errorcode, $module = 'error', $link = '', $a = null, $debuginfo = null) {
+    debugging("The function print_error() is deprecated. " .
+            "Please throw a new moodle_exception instance instead.", DEBUG_DEVELOPER);
+    throw new \moodle_exception($errorcode, $module, $link, $a, $debuginfo);
+}
+
+/**
+ * Execute cron tasks
+ *
+ * @param int|null $keepalive The keepalive time for this cron run.
+ * @deprecated since 4.2 Use \core\cron::run_main_process() instead.
+ */
+function cron_run(?int $keepalive = null): void {
+    debugging(
+        'The cron_run() function is deprecated. Please use \core\cron::run_main_process() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::run_main_process($keepalive);
+}
+
+/**
+ * Execute all queued scheduled tasks, applying necessary concurrency limits and time limits.
+ *
+ * @param   int     $timenow The time this process started.
+ * @deprecated since 4.2 Use \core\cron::run_scheduled_tasks() instead.
+ */
+function cron_run_scheduled_tasks(int $timenow) {
+    debugging(
+        'The cron_run_scheduled_tasks() function is deprecated. Please use \core\cron::run_scheduled_tasks() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::run_scheduled_tasks($timenow);
+}
+
+/**
+ * Execute all queued adhoc tasks, applying necessary concurrency limits and time limits.
+ *
+ * @param   int     $timenow The time this process started.
+ * @param   int     $keepalive Keep this function alive for N seconds and poll for new adhoc tasks.
+ * @param   bool    $checklimits Should we check limits?
+ * @deprecated since 4.2 Use \core\cron::run_adhoc_tasks() instead.
+ */
+function cron_run_adhoc_tasks(int $timenow, $keepalive = 0, $checklimits = true) {
+    debugging(
+        'The cron_run_adhoc_tasks() function is deprecated. Please use \core\cron::run_adhoc_tasks() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::run_adhoc_tasks($timenow, $keepalive, $checklimits);
+}
+
+/**
+ * Shared code that handles running of a single scheduled task within the cron.
+ *
+ * Not intended for calling directly outside of this library!
+ *
+ * @param \core\task\task_base $task
+ * @deprecated since 4.2 Use \core\cron::run_inner_scheduled_task() instead.
+ */
+function cron_run_inner_scheduled_task(\core\task\task_base $task) {
+    debugging(
+        'The cron_run_inner_scheduled_task() function is deprecated. Please use \core\cron::run_inner_scheduled_task() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::run_inner_scheduled_task($task);
+}
+
+/**
+ * Shared code that handles running of a single adhoc task within the cron.
+ *
+ * @param \core\task\adhoc_task $task
+ * @deprecated since 4.2 Use \core\cron::run_inner_adhoc_task() instead.
+ */
+function cron_run_inner_adhoc_task(\core\task\adhoc_task $task) {
+    debugging(
+        'The cron_run_inner_adhoc_task() function is deprecated. Please use \core\cron::run_inner_adhoc_task() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::run_inner_adhoc_task($task);
+}
+
+/**
+ * Sets the process title
+ *
+ * This makes it very easy for a sysadmin to immediately see what task
+ * a cron process is running at any given moment.
+ *
+ * @param string $title process status title
+ * @deprecated since 4.2 Use \core\cron::set_process_title() instead.
+ */
+function cron_set_process_title(string $title) {
+    debugging(
+        'The cron_set_process_title() function is deprecated. Please use \core\cron::set_process_title() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::set_process_title($title);
+}
+
+/**
+ * Output some standard information during cron runs. Specifically current time
+ * and memory usage. This method also does gc_collect_cycles() (before displaying
+ * memory usage) to try to help PHP manage memory better.
+ *
+ * @deprecated since 4.2 Use \core\cron::trace_time_and_memory() instead.
+ */
+function cron_trace_time_and_memory() {
+    debugging(
+        'The cron_trace_time_and_memory() function is deprecated. Please use \core\cron::trace_time_and_memory() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::trace_time_and_memory();
+}
+
+/**
+ * Prepare the output renderer for the cron run.
+ *
+ * This involves creating a new $PAGE, and $OUTPUT fresh for each task and prevents any one task from influencing
+ * any other.
+ *
+ * @param   bool    $restore Whether to restore the original PAGE and OUTPUT
+ * @deprecated since 4.2 Use \core\cron::prepare_core_renderer() instead.
+ */
+function cron_prepare_core_renderer($restore = false) {
+    debugging(
+        'The cron_prepare_core_renderer() function is deprecated. Please use \core\cron::prepare_core_renderer() instead.',
+        DEBUG_DEVELOPER
+    );
+    \core\cron::prepare_core_renderer($restore);
+}
+
+/**
+ * Sets up current user and course environment (lang, etc.) in cron.
+ * Do not use outside of cron script!
+ *
+ * @param stdClass $user full user object, null means default cron user (admin),
+ *                 value 'reset' means reset internal static caches.
+ * @param stdClass $course full course record, null means $SITE
+ * @param bool $leavepagealone If specified, stops it messing with global page object
+ * @deprecated since 4.2. Use \core\core::setup_user() instead.
+ * @return void
+ */
+function cron_setup_user($user = null, $course = null, $leavepagealone = false) {
+    debugging(
+        'The cron_setup_user() function is deprecated. ' .
+            'Please use \core\cron::setup_user() and reset_user_cache() as appropriate instead.',
+        DEBUG_DEVELOPER
+    );
+
+    if ($user === 'reset') {
+        \core\cron::reset_user_cache();
+        return;
+    }
+
+    \core\cron::setup_user($user, $course, $leavepagealone);
 }

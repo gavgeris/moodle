@@ -25,8 +25,7 @@ Feature: We can use a minimum grade different than zero
     And I log in as "admin"
     And I set the following administration settings values:
       | grade_aggregations_visible | Mean of grades,Weighted mean of grades,Simple weighted mean of grades,Mean of grades (with extra credits),Median of grades,Lowest grade,Highest grade,Mode of grades,Natural |
-    And I am on "Course 1" course homepage
-    And I navigate to "Setup > Gradebook setup" in the course gradebook
+    And I am on the "Course 1" "grades > gradebook setup" page
     And I press "Add grade item"
     And I set the following fields to these values:
       | Item name | Manual item 1 |
@@ -72,19 +71,16 @@ Feature: We can use a minimum grade different than zero
   @javascript
   Scenario: Natural aggregation with negative and positive grade
     And I navigate to "Setup > Gradebook setup" in the course gradebook
-    And I set the following settings for grade item "Sub category 1":
+    And I set the following settings for grade item "Sub category 1" of type "category" on "setup" page:
       | Aggregation          | Natural |
       | Exclude empty grades | 0       |
-    And I set the following settings for grade item "Sub category 2":
+    And I set the following settings for grade item "Sub category 2" of type "category" on "setup" page:
       | Aggregation          | Natural |
       | Exclude empty grades | 0       |
-    And I set the following settings for grade item "Course 1":
+    And I set the following settings for grade item "Course 1" of type "course" on "setup" page:
       | Aggregation          | Natural |
       | Exclude empty grades | 0       |
-    And I log out
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    And I navigate to "View > Grader report" in the course gradebook
+    And I am on the "Course 1" "grades > Grader report > View" page logged in as "teacher1"
     And I turn editing mode on
     When I give the grade "-25.00" to the user "Student 1" for the grade item "Manual item 1"
     And I give the grade "50.00" to the user "Student 1" for the grade item "Manual item 2"
@@ -100,7 +96,7 @@ Feature: We can use a minimum grade different than zero
     And I give the grade "0.00" to the user "Student 2" for the grade item "Manual item 6"
     And I press "Save changes"
     And I navigate to "View > User report" in the course gradebook
-    And I set the field "Select all or one user" to "Student 1"
+    And I click on "Student 1" in the "user" search widget
     Then the following should exist in the "user-grade" table:
       | Grade item    | Calculated weight | Grade  | Contribution to course total |
       | Manual item 1 | 18.18 %           | -25.00 | -4.55 %                      |
@@ -109,7 +105,7 @@ Feature: We can use a minimum grade different than zero
       | Manual item 4 | 66.67 %           | -10.00 | -1.82 %                      |
       | Manual item 5 | 50.00 %           | 50.00  | 9.09 %                       |
       | Manual item 6 | 50.00 %           | 75.00  | 13.64 %                      |
-    And I set the field "Select all or one user" to "Student 2"
+    And I click on "Student 2" in the "user" search widget
     And the following should exist in the "user-grade" table:
       | Grade item    | Calculated weight | Grade  | Contribution to course total |
       | Manual item 1 | 18.18 %           | 0.00   | 0.00 %                       |

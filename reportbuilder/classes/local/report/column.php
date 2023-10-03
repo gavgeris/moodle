@@ -367,12 +367,12 @@ final class column {
         $fields = [];
 
         foreach ($this->fields as $alias => $sql) {
-            // Ensure params within SQL are prefixed with column index.
-            foreach ($this->params as $name => $value) {
-                $sql = preg_replace_callback('/:(?<param>' . preg_quote($name, '\b/') . ')/', function(array $matches): string {
-                    return ':' . $this->unique_param_name($matches['param']);
-                }, $sql);
-            }
+
+            // Ensure parameter names within SQL are prefixed with column index.
+            $params = array_keys($this->params);
+            $sql = database::sql_replace_parameter_names($sql, $params, function(string $param): string {
+                return $this->unique_param_name($param);
+            });
 
             $fields[$alias] = [
                 'sql' => $sql,
@@ -473,19 +473,20 @@ final class column {
     }
 
     /**
-     * Adds column callback (in the case there are multiple, they will be applied one after another)
+     * Adds column callback (in the case there are multiple, they will be called iteratively - the result of each passed
+     * along to the next in the chain)
      *
      * The callback should implement the following signature (where $value is the first column field, $row is all column
-     * fields, and $additionalarguments are those passed on from this method):
+     * fields, $additionalarguments are those passed to this method, and $aggregation indicates the current aggregation type
+     * being applied to the column):
      *
-     * The type of the $value parameter passed to the callback is determined by calling {@see set_type}, however note that
-     * if the column is part of a report source and can be aggregated using one of the "Group concatenation" methods then the
-     * type should be omitted if it's not string
-     * For entities that can to be left joined to a report, the first argument to their column callbacks must be nullable.
+     * function($value, stdClass $row, $additionalarguments, ?string $aggregation): string
      *
-     * function($value, stdClass $row[, $additionalarguments]): string
+     * The type of the $value parameter passed to the callback is determined by calling {@see set_type}, this type is preserved
+     * if the column is part of a report source and is being aggregated. For entities that can be left joined to a report, the
+     * first argument of the callback must be nullable (as it should also be if the first column field is itself nullable).
      *
-     * @param callable $callable function that takes arguments ($value, \stdClass $row, $additionalarguments)
+     * @param callable $callable
      * @param mixed $additionalarguments
      * @return self
      */
@@ -646,16 +647,17 @@ final class column {
      * Return the default column value, that being the value of it's first field
      *
      * @param array $values
+     * @param int $columntype
      * @return mixed
      */
-    private function get_default_value(array $values) {
+    public static function get_default_value(array $values, int $columntype) {
         $value = reset($values);
         if ($value === null) {
             return $value;
         }
 
         // Ensure default value is cast to it's strict type.
-        switch ($this->get_type()) {
+        switch ($columntype) {
             case self::TYPE_INTEGER:
             case self::TYPE_TIMESTAMP:
                 $value = (int) $value;
@@ -679,15 +681,15 @@ final class column {
      */
     public function format_value(array $row) {
         $values = $this->get_values($row);
-        $value = $this->get_default_value($values);
+        $value = self::get_default_value($values, $this->type);
 
         // If column is being aggregated then defer formatting to them, otherwise loop through all column callbacks.
         if (!empty($this->aggregation)) {
-            $value = $this->aggregation::format_value($value, $values, $this->callbacks);
+            $value = $this->aggregation::format_value($value, $values, $this->callbacks, $this->type);
         } else {
             foreach ($this->callbacks as $callback) {
                 [$callable, $arguments] = $callback;
-                $value = ($callable)($value, (object) $values, $arguments);
+                $value = ($callable)($value, (object) $values, $arguments, null);
             }
         }
 

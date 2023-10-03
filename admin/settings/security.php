@@ -145,7 +145,7 @@ if ($hassiteconfig) { // speedup for non-admins, add all caps used on this page
     $temp->add(new admin_setting_heading('adminpresets', new lang_string('siteadminpresetspluginname', 'core_adminpresets'), ''));
     $sensiblesettingsdefault = 'recaptchapublickey@@none, recaptchaprivatekey@@none, googlemapkey3@@none, ';
     $sensiblesettingsdefault .= 'secretphrase@@url, cronremotepassword@@none, smtpuser@@none, ';
-    $sensiblesettingsdefault .= 'smtppass@none, proxypassword@@none, quizpassword@@quiz, allowedip@@none, blockedip@@none, ';
+    $sensiblesettingsdefault .= 'smtppass@@none, proxypassword@@none, quizpassword@@quiz, allowedip@@none, blockedip@@none, ';
     $sensiblesettingsdefault .= 'dbpass@@logstore_database, messageinbound_hostpass@@none, ';
     $sensiblesettingsdefault .= 'bind_pw@@auth_cas, pass@@auth_db, bind_pw@@auth_ldap, ';
     $sensiblesettingsdefault .= 'dbpass@@enrol_database, bind_pw@@enrol_ldap, ';
@@ -169,7 +169,7 @@ if ($hassiteconfig) { // speedup for non-admins, add all caps used on this page
 
     // Settings elements used by the \core\files\curl_security_helper class.
     $blockedhostsdefault = [
-        '127.0.0.1',
+        '127.0.0.0/8',
         '192.168.0.0/16',
         '10.0.0.0/8',
         '172.16.0.0/12',

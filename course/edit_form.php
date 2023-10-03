@@ -4,6 +4,7 @@ defined('MOODLE_INTERNAL') || die;
 
 require_once($CFG->libdir.'/formslib.php');
 require_once($CFG->libdir.'/completionlib.php');
+require_once($CFG->libdir . '/pdflib.php');
 
 /**
  * The form for handling editing a course.
@@ -251,11 +252,12 @@ class course_edit_form extends moodleform {
             $mform->addElement('select', 'theme', get_string('forcetheme'), $themes);
         }
 
-        $languages=array();
-        $languages[''] = get_string('forceno');
-        $languages += get_string_manager()->get_list_of_translations();
         if ((empty($course->id) && guess_if_creator_will_have_course_capability('moodle/course:setforcedlanguage', $categorycontext))
                 || (!empty($course->id) && has_capability('moodle/course:setforcedlanguage', $coursecontext))) {
+
+            $languages = ['' => get_string('forceno')];
+            $languages += get_string_manager()->get_list_of_translations();
+
             $mform->addElement('select', 'lang', get_string('forcelanguage'), $languages);
             $mform->setDefault('lang', $courseconfig->lang);
         }
@@ -316,6 +318,22 @@ class course_edit_form extends moodleform {
         $mform->addElement('select', 'maxbytes', get_string('maximumupload'), $choices);
         $mform->addHelpButton('maxbytes', 'maximumupload');
         $mform->setDefault('maxbytes', $courseconfig->maxbytes);
+
+        // PDF font.
+        if (!empty($CFG->enablepdfexportfont)) {
+            $pdf = new \pdf;
+            $fontlist = $pdf->get_export_fontlist();
+            // Show the option if the font is defined more than one.
+            if (count($fontlist) > 1) {
+                $defaultfont = $courseconfig->pdfexportfont ?? 'freesans';
+                if (empty($fontlist[$defaultfont])) {
+                    $defaultfont = current($fontlist);
+                }
+                $mform->addElement('select', 'pdfexportfont', get_string('pdfexportfont', 'course'), $fontlist);
+                $mform->addHelpButton('pdfexportfont', 'pdfexportfont', 'course');
+                $mform->setDefault('pdfexportfont', $defaultfont);
+            }
+        }
 
         // Completion tracking.
         if (completion_info::is_enabled_for_site()) {

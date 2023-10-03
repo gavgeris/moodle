@@ -88,7 +88,7 @@ abstract class question_definition {
     /** @var integer question test format. */
     public $generalfeedbackformat;
 
-    /** @var number what this quetsion is marked out of, by default. */
+    /** @var float what this quetsion is marked out of, by default. */
     public $defaultmark = 1;
 
     /** @var integer How many question numbers this question consumes. */
@@ -139,13 +139,12 @@ abstract class question_definition {
      * Constructor. Normally to get a question, you call
      * {@link question_bank::load_question()}, but questions can be created
      * directly, for example in unit test code.
-     * @return unknown_type
      */
     public function __construct() {
     }
 
     /**
-     * @return the name of the question type (for example multichoice) that this
+     * @return string the name of the question type (for example multichoice) that this
      * question is.
      */
     public function get_type_name() {
