@@ -37,3 +37,4 @@ git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/auto
 git submodule add https://github.com/moodleworkplace/moodle-mod_coursecertificate mod/coursecertificate
 git submodule add https://github.com/moodleworkplace/moodle-tool_certificate admin/tool/certificate
 
+#
