@@ -82,6 +82,14 @@ reports,core_reportbuilder|/reportbuilder/index.php',
     $setting->set_updatedcallback('theme_reset_all_caches');
     $temp->add($setting);
 
+    // Favicon file setting.
+    $title = get_string('favicon', 'admin');
+    $description = get_string('favicon_desc', 'admin');
+    $setting = new admin_setting_configstoredfile('core_admin/favicon', $title, $description, 'favicon', 0,
+        ['maxfiles' => 1, 'accepted_types' => ['image']]);
+    $setting->set_updatedcallback('theme_reset_all_caches');
+    $temp->add($setting);
+
     $ADMIN->add('appearance', $temp);
 
     // Course colours section.
@@ -236,6 +244,18 @@ reports,core_reportbuilder|/reportbuilder/index.php',
 
     // "htmlsettings" settingpage
     $temp = new admin_settingpage('htmlsettings', new lang_string('htmlsettings', 'admin'));
+    $sitenameintitleoptions = [
+        'shortname' => new lang_string('shortname'),
+        'fullname' => new lang_string('fullname'),
+    ];
+    $sitenameintitleconfig = new admin_setting_configselect(
+        'sitenameintitle',
+        new lang_string('sitenameintitle', 'admin'),
+        new lang_string('sitenameintitle_help', 'admin'),
+        'shortname',
+        $sitenameintitleoptions
+    );
+    $temp->add($sitenameintitleconfig);
     $temp->add(new admin_setting_configcheckbox('formatstringstriptags', new lang_string('stripalltitletags', 'admin'), new lang_string('configstripalltitletags', 'admin'), 1));
     $temp->add(new admin_setting_emoticons());
     $ADMIN->add('appearance', $temp);

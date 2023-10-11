@@ -6,6 +6,8 @@
     require_once('lib.php');
     require_once($CFG->libdir.'/completionlib.php');
 
+    redirect_if_major_upgrade_required();
+
     $id          = optional_param('id', 0, PARAM_INT);
     $name        = optional_param('name', '', PARAM_TEXT);
     $edit        = optional_param('edit', -1, PARAM_BOOL);
@@ -27,7 +29,7 @@
     } else if (!empty($id)) {
         $params = array('id' => $id);
     }else {
-        print_error('unspecifycourseid', 'error');
+        throw new \moodle_exception('unspecifycourseid', 'error');
     }
 
     $course = $DB->get_record('course', $params, '*', MUST_EXIST);
@@ -192,7 +194,11 @@
                 if ($course->id == SITEID) {
                     redirect($CFG->wwwroot . '/?redirect=0');
                 } else {
-                    redirect(course_get_url($course));
+                    if ($format->get_course_display() == COURSE_DISPLAY_MULTIPAGE) {
+                        redirect(course_get_url($course));
+                    } else {
+                        redirect(course_get_url($course, $destsection));
+                    }
                 }
             } else {
                 echo $OUTPUT->notification('An error occurred while moving a section');
@@ -221,13 +227,21 @@
         $PAGE->set_button($buttons);
     }
 
+    $editingtitle = '';
+    if ($PAGE->user_is_editing()) {
+        // Append this to the page title's lang string to get its equivalent when editing mode is turned on.
+        $editingtitle = 'editing';
+    }
+
     // If viewing a section, make the title more specific
     if ($section and $section > 0 and course_format_uses_sections($course->format)) {
         $sectionname = get_string('sectionname', "format_$course->format");
         $sectiontitle = get_section_name($course, $section);
-        $PAGE->set_title(get_string('coursesectiontitle', 'moodle', array('course' => $course->fullname, 'sectiontitle' => $sectiontitle, 'sectionname' => $sectionname)));
+        $PAGE->set_title(get_string('coursesectiontitle' . $editingtitle, 'moodle', array(
+            'course' => $course->fullname, 'sectiontitle' => $sectiontitle, 'sectionname' => $sectionname)
+        ));
     } else {
-        $PAGE->set_title(get_string('coursetitle', 'moodle', array('course' => $course->fullname)));
+        $PAGE->set_title(get_string('coursetitle' . $editingtitle, 'moodle', array('course' => $course->fullname)));
     }
 
     $PAGE->set_heading($course->fullname);

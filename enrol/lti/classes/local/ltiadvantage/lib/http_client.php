@@ -65,7 +65,9 @@ class http_client implements IHttpClient {
             $this->curlclient->setHeader($headers);
         }
         if ($method == 'POST') {
-            $res = $this->curlclient->post($url, $options['body'] ?? null, ['CURLOPT_HEADER' => 1]);
+            $body = $options['body'] ?? null;
+            $body = $body ?? (!empty($options['form_params']) ? http_build_query($options['form_params'], '' , '&') : null);
+            $res = $this->curlclient->post($url, $body, ['CURLOPT_HEADER' => 1]);
         } else if ($method == 'GET') {
             $res = $this->curlclient->get($url, [], ['CURLOPT_HEADER' => 1]);
         } else {
@@ -75,23 +77,11 @@ class http_client implements IHttpClient {
         $info = $this->curlclient->get_info();
         if (!$this->curlclient->get_errno() && !$this->curlclient->error) {
             // No errors, so format the response.
-            $headersize = $info['header_size'];
-            $resheaders = substr($res, 0, $headersize);
-            $resbody = substr($res, $headersize);
-            $headerlines = array_filter(explode("\r\n", $resheaders));
-            $parsedresponseheaders = [
-                'httpstatus' => array_shift($headerlines)
-            ];
-            foreach ($headerlines as $headerline) {
-                $headerbits = explode(':', $headerline, 2);
-                if (count($headerbits) == 2) {
-                    // Only parse headers having colon separation.
-                    $parsedresponseheaders[$headerbits[0]] = $headerbits[1];
-                }
-            }
-            $response = new http_response(['headers' => $parsedresponseheaders, 'body' => $resbody], intval($info['http_code']));
+            $resbody = substr($res ?? '', $info['header_size']);
+            $headers = $this->curlclient->getResponse();
+            $response = new http_response(['headers' => $headers, 'body' => $resbody], intval($info['http_code']));
             if ($response->getStatusCode() >= 400) {
-                throw new http_exception($response, "An HTTP error status was received: '{$response->getHeaders()['httpstatus']}'");
+                throw new http_exception($response, "An HTTP error status was received: '".reset($headers)."'");
             }
             return $response;
         }

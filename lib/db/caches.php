@@ -139,13 +139,13 @@ $definitions = array(
         'ttl' => 900,
     ),
 
-    // Cache the capabilities list DB table. See get_all_capabilities in accesslib.
+    // Cache the capabilities list DB table. See get_all_capabilities and get_deprecated_capability_info in accesslib.
     'capabilities' => array(
         'mode' => cache_store::MODE_APPLICATION,
         'simplekeys' => true,
         'simpledata' => true,
         'staticacceleration' => true,
-        'staticaccelerationsize' => 1,
+        'staticaccelerationsize' => 2, // Should be main capabilities and deprecated capabilities.
         'ttl' => 3600, // Just in case.
     ),
 
@@ -241,6 +241,7 @@ $definitions = array(
         'mode' => cache_store::MODE_APPLICATION,
         'simplekeys' => true,
         'canuselocalstore' => true,
+        'requirelockingbeforewrite' => true
     ),
     // This is the session user selections cache.
     // It's a special cache that is used to record user selections that should persist for the lifetime of the session.
@@ -545,5 +546,15 @@ $definitions = array(
         'simpledata' => true,
         'staticacceleration' => true,
         'ttl' => 1800,
+    ],
+
+    // Cache image dimensions.
+    'file_imageinfo' => [
+        'mode' => cache_store::MODE_APPLICATION,
+        'simplekeys' => true,
+        'simpledata' => true,
+        'staticacceleration' => true,
+        'canuselocalstore' => true,
+        'staticaccelerationsize' => 100,
     ],
 );

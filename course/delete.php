@@ -36,7 +36,7 @@ require_login();
 
 if ($SITE->id == $course->id || !can_delete_course($id)) {
     // Can not delete frontpage or don't have permission to delete the course.
-    print_error('cannotdeletecourse');
+    throw new \moodle_exception('cannotdeletecourse');
 }
 
 $categorycontext = context_coursecat::instance($course->category);
@@ -57,7 +57,7 @@ if ($delete === md5($course->timemodified)) {
     $strdeletingcourse = get_string("deletingcourse", "", $courseshortname);
 
     $PAGE->navbar->add($strdeletingcourse);
-    $PAGE->set_title("$SITE->shortname: $strdeletingcourse");
+    $PAGE->set_title($strdeletingcourse);
     $PAGE->set_heading($SITE->fullname);
 
     echo $OUTPUT->header();
@@ -77,7 +77,7 @@ if ($delete === md5($course->timemodified)) {
 $strdeletecheck = get_string("deletecheck", "", $courseshortname);
 
 $PAGE->navbar->add($strdeletecheck);
-$PAGE->set_title("$SITE->shortname: $strdeletecheck");
+$PAGE->set_title($strdeletecheck);
 $PAGE->set_heading($SITE->fullname);
 echo $OUTPUT->header();
 

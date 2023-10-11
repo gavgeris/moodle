@@ -933,6 +933,7 @@ function course_delete_module($cmid, $async = false) {
     // features are not turned on, in case they were turned on previously (these will be
     // very quick on an empty table).
     $DB->delete_records('course_modules_completion', array('coursemoduleid' => $cm->id));
+    $DB->delete_records('course_modules_viewed', ['coursemoduleid' => $cm->id]);
     $DB->delete_records('course_completion_criteria', array('moduleinstance' => $cm->id,
                                                             'course' => $cm->course,
                                                             'criteriatype' => COMPLETION_CRITERIA_TYPE_ACTIVITY));
@@ -1642,6 +1643,7 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
     $coursecontext = context_course::instance($mod->course);
     $modcontext = context_module::instance($mod->id);
     $courseformat = course_get_format($mod->get_course());
+    $usecomponents = $courseformat->supports_components();
 
     $editcaps = array('moodle/course:manageactivities', 'moodle/course:activityvisibility', 'moodle/role:assign');
     $dupecaps = array('moodle/backup:backuptargetimport', 'moodle/restore:restoretargetimport');
@@ -1680,7 +1682,7 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
     }
 
     // Move (only for component compatible formats).
-    if ($courseformat->supports_components()) {
+    if ($usecomponents) {
         $actions['move'] = new action_menu_link_secondary(
             new moodle_url($baseurl, [
                 'sesskey' => sesskey(),
@@ -1700,7 +1702,9 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
     if ($hasmanageactivities && $indent >= 0) {
         $indentlimits = new stdClass();
         $indentlimits->min = 0;
-        $indentlimits->max = 16;
+        // Legacy indentation could continue using a limit of 16,
+        // but components based formats will be forced to use one level indentation only.
+        $indentlimits->max = ($usecomponents) ? 1 : 16;
         if (right_to_left()) {   // Exchange arrows on RTL
             $rightarrow = 't/left';
             $leftarrow  = 't/right';
@@ -1715,11 +1719,16 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
             $enabledclass = '';
         }
         $actions['moveright'] = new action_menu_link_secondary(
-            new moodle_url($baseurl, array('id' => $mod->id, 'indent' => '1')),
-            new pix_icon($rightarrow, '', 'moodle', array('class' => 'iconsmall')),
+            new moodle_url($baseurl, ['id' => $mod->id, 'indent' => '1']),
+            new pix_icon($rightarrow, '', 'moodle', ['class' => 'iconsmall']),
             $str->moveright,
-            array('class' => 'editing_moveright ' . $enabledclass, 'data-action' => 'moveright',
-                'data-keepopen' => true, 'data-sectionreturn' => $sr)
+            [
+                'class' => 'editing_moveright ' . $enabledclass,
+                'data-action' => ($usecomponents) ? 'cmMoveRight' : 'moveright',
+                'data-keepopen' => true,
+                'data-sectionreturn' => $sr,
+                'data-id' => $mod->id,
+            ]
         );
 
         if ($indent <= $indentlimits->min) {
@@ -1728,11 +1737,16 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
             $enabledclass = '';
         }
         $actions['moveleft'] = new action_menu_link_secondary(
-            new moodle_url($baseurl, array('id' => $mod->id, 'indent' => '-1')),
-            new pix_icon($leftarrow, '', 'moodle', array('class' => 'iconsmall')),
+            new moodle_url($baseurl, ['id' => $mod->id, 'indent' => '0']),
+            new pix_icon($leftarrow, '', 'moodle', ['class' => 'iconsmall']),
             $str->moveleft,
-            array('class' => 'editing_moveleft ' . $enabledclass, 'data-action' => 'moveleft',
-                'data-keepopen' => true, 'data-sectionreturn' => $sr)
+            [
+                'class' => 'editing_moveleft ' . $enabledclass,
+                'data-action' => ($usecomponents) ? 'cmMoveLeft' : 'moveleft',
+                'data-keepopen' => true,
+                'data-sectionreturn' => $sr,
+                'data-id' => $mod->id,
+            ]
         );
 
     }
@@ -1754,7 +1768,11 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
                 new moodle_url($baseurl, array('hide' => $mod->id)),
                 new pix_icon('t/hide', '', 'moodle', array('class' => 'iconsmall')),
                 $str->modhide,
-                array('class' => 'editing_hide', 'data-action' => 'hide')
+                [
+                    'class' => 'editing_hide',
+                    'data-action' => ($usecomponents) ? 'cmHide' : 'hide',
+                    'data-id' => $mod->id,
+                ]
             );
         } else if (!$displayedoncoursepage && $sectionvisible) {
             // Offer to "show" only if the section is visible.
@@ -1762,7 +1780,11 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
                 new moodle_url($baseurl, array('show' => $mod->id)),
                 new pix_icon('t/show', '', 'moodle', array('class' => 'iconsmall')),
                 $str->modshow,
-                array('class' => 'editing_show', 'data-action' => 'show')
+                [
+                    'class' => 'editing_show',
+                    'data-action' => ($usecomponents) ? 'cmShow' : 'show',
+                    'data-id' => $mod->id,
+                ]
             );
         }
 
@@ -1772,18 +1794,31 @@ function course_get_cm_edit_actions(cm_info $mod, $indent = -1, $sr = null) {
                 new moodle_url($baseurl, array('hide' => $mod->id)),
                 new pix_icon('t/unblock', '', 'moodle', array('class' => 'iconsmall')),
                 $str->makeunavailable,
-                array('class' => 'editing_makeunavailable', 'data-action' => 'hide', 'data-sectionreturn' => $sr)
+                [
+                    'class' => 'editing_makeunavailable',
+                    'data-action' => ($usecomponents) ? 'cmHide' : 'hide',
+                    'data-sectionreturn' => $sr,
+                    'data-id' => $mod->id,
+                ]
             );
         } else if ($unavailable && (!$sectionvisible || $allowstealth) && $mod->has_view()) {
             // Allow to make visually hidden module available in gradebook and other reports by making it a "stealth" module.
             // When the section is hidden it is an equivalent of "showing" the module.
             // Activities without the link (i.e. labels) can not be made available but hidden on course page.
             $action = $sectionvisible ? 'stealth' : 'show';
+            if ($usecomponents) {
+                $action = 'cm' . ucfirst($action);
+            }
             $actions[$action] = new action_menu_link_secondary(
-                new moodle_url($baseurl, array($action => $mod->id)),
+                new moodle_url($baseurl, array('stealth' => $mod->id)),
                 new pix_icon('t/block', '', 'moodle', array('class' => 'iconsmall')),
                 $str->makeavailable,
-                array('class' => 'editing_makeavailable', 'data-action' => $action, 'data-sectionreturn' => $sr)
+                [
+                    'class' => 'editing_makeavailable',
+                    'data-action' => $action,
+                    'data-sectionreturn' => $sr,
+                    'data-id' => $mod->id,
+                ]
             );
         }
     }
@@ -2191,7 +2226,7 @@ function create_course($data, $editoroptions = NULL) {
     if ($editoroptions) {
         // summary text is updated later, we need context to store the files first
         $data->summary = '';
-        $data->summary_format = FORMAT_HTML;
+        $data->summary_format = $data->summary_editor['format'];
     }
 
     // Get default completion settings as a fallback in case the enablecompletion field is not set.
@@ -2691,7 +2726,7 @@ class course_request {
         }
         if (empty($properties->requester)) {
             if (!($this->properties = $DB->get_record('course_request', array('id' => $properties->id)))) {
-                print_error('unknowncourserequest');
+                throw new \moodle_exception('unknowncourserequest');
             }
         } else {
             $this->properties = $properties;
@@ -3409,10 +3444,9 @@ function duplicate_module($course, $cm) {
         // Proceed with activity renaming before everything else. We don't use APIs here to avoid
         // triggering a lot of create/update duplicated events.
         $newcm = get_coursemodule_from_id($cm->modname, $newcmid, $cm->course);
-        // Add ' (copy)' to duplicates. Note we don't cleanup or validate lengths here. It comes
-        // from original name that was valid, so the copy should be too.
+        // Add ' (copy)' language string postfix to duplicated module.
         $newname = get_string('duplicatedmodule', 'moodle', $newcm->name);
-        $DB->set_field($cm->modname, 'name', $newname, ['id' => $newcm->instance]);
+        set_coursemodule_name($newcm->id, $newname);
 
         $section = $DB->get_record('course_sections', array('id' => $cm->section, 'course' => $cm->course));
         $modarray = explode(",", trim($section->sequence));
@@ -3716,7 +3750,7 @@ function core_course_drawer(): string {
     }
 
     // Show course index to users can access the course only.
-    if (!can_access_course($PAGE->course)) {
+    if (!can_access_course($PAGE->course, null, '', true)) {
         return '';
     }
 
@@ -4106,14 +4140,22 @@ function course_classify_for_timeline($course, $user = null, $completioninfo = n
         $user = $USER;
     }
 
+    if ($completioninfo == null) {
+        $completioninfo = new completion_info($course);
+    }
+
+    // Let plugins override data for timeline classification.
+    $pluginsfunction = get_plugins_with_function('extend_course_classify_for_timeline', 'lib.php');
+    foreach ($pluginsfunction as $plugintype => $plugins) {
+        foreach ($plugins as $pluginfunction) {
+            $pluginfunction($course, $user, $completioninfo);
+        }
+    }
+
     $today = time();
     // End date past.
     if (!empty($course->enddate) && (course_classify_end_date($course) < $today)) {
         return COURSE_TIMELINE_PAST;
-    }
-
-    if ($completioninfo == null) {
-        $completioninfo = new completion_info($course);
     }
 
     // Course was completed.
