@@ -47,7 +47,8 @@ Feature: Render H5P content using filters
     When I am on the PageName1 "page activity" page logged in as teacher1
     Then ".h5p-iframe" "css_element" should not exist
 
-  @javascript
+  # This scenario has Atto-specific steps. See MDL-75913 for further details.
+  @javascript @editor_atto
   Scenario: Render a local H5P file as admin
     Given the following "activities" exist:
       | activity | name      | intro     | introformat | course | content                                                                          | contentformat | idnumber | [[files::content]]                        |
@@ -69,7 +70,8 @@ Feature: Render H5P content using filters
     Then I should not see "you don't have access"
     And I should see "Lorum ipsum"
 
-  @javascript
+  # This scenario has Atto-specific steps. See MDL-75913 for further details.
+  @javascript @editor_atto
   Scenario: Render a local H5P file as teacher
     Given the following "activities" exist:
       | activity | name      | intro     | introformat | course | content                                                                          | contentformat | idnumber | [[files::content]]                                  |
@@ -81,7 +83,8 @@ Feature: Render H5P content using filters
     Then I should see "Note that the libraries may exist in the file you uploaded, but you're not allowed to upload new libraries."
     And I should see "missing-required-library"
 
-  @javascript
+  # This scenario has Atto-specific steps. See MDL-75913 for further details.
+  @javascript @editor_atto
   Scenario: Render a local H5P file with existing libraries
     Given the following "activities" exist:
       | activity | name      | intro     | introformat | course | content                                                                          | contentformat | idnumber | [[files::content]]                                  |
@@ -111,7 +114,8 @@ Feature: Render H5P content using filters
     Then I should not see "missing-required-library"
     And I should see "Lorum ipsum"
 
-  @javascript
+  # This scenario has Atto-specific steps. See MDL-75913 for further details.
+  @javascript @editor_atto
   Scenario: Render local H5P file with a disabled main library
     Given the following "activities" exist:
       | activity | name      | intro     | introformat | course | content                                                                          | contentformat | idnumber | [[files::content]]                        |

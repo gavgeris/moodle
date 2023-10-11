@@ -115,5 +115,21 @@ function xmldb_label_upgrade($oldversion) {
     // Automatically generated Moodle v4.2.0 release upgrade line.
     // Put any upgrade step following this.
 
+    // Automatically generated Moodle v4.0.0 release upgrade line.
+    // Put any upgrade step following this.
+
+    if ($oldversion < 2022041901) {
+        $module = $DB->get_field('modules', 'id', ['name' => 'label']);
+        $DB->execute('
+            UPDATE {course_modules}
+               SET visible = 0, visibleoncoursepage = 1
+             WHERE module = :module
+                   AND visible = 1
+                   AND visibleoncoursepage = 0',
+            ['module' => $module]
+        );
+        upgrade_mod_savepoint(true, 2022041901, 'label');
+    }
+
     return true;
 }

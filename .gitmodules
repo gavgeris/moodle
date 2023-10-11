@@ -1,0 +1,111 @@
+[submodule "mod/certificate"]
+        path = mod/certificate
+        url = https://github.com/gavgeris/moodle-mod_certificate
+[submodule "mod/groupmembers"]
+	path = mod/groupmembers
+	url = https://github.com/learnweb/moodle-mod_groupmembers
+[submodule "mod/hvp"]
+	path = mod/hvp
+	url = https://github.com/h5p/moodle-mod_hvp
+[submodule "mod/questionnaire"]
+	path = mod/questionnaire
+	url = https://github.com/PoetOS/moodle-mod_questionnaire
+[submodule "blocks/completion_progress"]
+	path = blocks/completion_progress
+	url = https://github.com/jonof/moodle-block_completion_progress
+[submodule "blocks/custom_course_menu"]
+	path = blocks/custom_course_menu
+	url = https://github.com/UniversityofPortland/moodle-block_custom_course_menu
+[submodule "blocks/grade_me"]
+	path = blocks/grade_me
+	url = https://github.com/remotelearner/moodle-block_grade_me
+[submodule "blocks/massaction"]
+	path = blocks/massaction
+	url = https://github.com/Syxton/moodle-block_massaction
+[submodule "blocks/sharing_cart"]
+	path = blocks/sharing_cart
+	url = https://github.com/donhinkelman/moodle-block_sharing_cart
+[submodule "blocks/xp"]
+	path = blocks/xp
+	url = https://github.com/FMCorz/moodle-block_xp
+[submodule "filter/filtercodes"]
+	path = filter/filtercodes
+	url = https://github.com/michael-milette/moodle-filter_filtercodes
+[submodule "filter/generico"]
+	path = filter/generico
+	url = https://github.com/justinhunt/moodle-filter_generico
+[submodule "filter/sectionnames"]
+	path = filter/sectionnames
+	url = https://github.com/Syxton/moodle-filter_sectionnames
+[submodule "filter/syntaxhighlighter"]
+	path = filter/syntaxhighlighter
+	url = https://github.com/sharpchi/moodle-filter_syntaxhighlighter
+[submodule "lib/editor/atto/plugins/bsgrid"]
+	path = lib/editor/atto/plugins/bsgrid
+	url = https://github.com/johnhpercival/moodle-atto_bsgrid
+[submodule "lib/editor/atto/plugins/fullscreen"]
+	path = lib/editor/atto/plugins/fullscreen
+	url = https://github.com/dthies/moodle-atto_fullscreen
+[submodule "lib/editor/atto/plugins/generico"]
+	path = lib/editor/atto/plugins/generico
+	url = https://github.com/justinhunt/moodle-atto_generico
+[submodule "lib/editor/atto/plugins/morebackcolors"]
+	path = lib/editor/atto/plugins/morebackcolors
+	url = https://github.com/ndunand/moodle-atto_morebackcolors
+[submodule "lib/editor/atto/plugins/styles"]
+	path = lib/editor/atto/plugins/styles
+	url = https://github.com/moodle-an-hochschulen/moodle-atto_styles
+[submodule "lib/editor/atto/plugins/templates4u"]
+	path = lib/editor/atto/plugins/templates4u
+	url = https://github.com/sharpchi/moodle-atto_templates4u
+[submodule "lib/editor/atto/plugins/autoenrol"]
+	path = lib/editor/atto/plugins/autoenrol
+	url = https://github.com/bobopinna/moodle-enrol_autoenrol
+[submodule "admin/tool/clearbackupfiles"]
+	path = admin/tool/clearbackupfiles
+	url = https://github.com/doiphode/moodle-tool_clearbackupfiles
+[submodule "admin/tool/redis"]
+	path = admin/tool/redis
+	url = https://github.com/moodle-an-hochschulen/moodle-tool_redis
+[submodule "course/format/collapsibletopics"]
+	path = course/format/collapsibletopics
+	url = https://github.com/cellule-tice/moodle-format_collapsibletopics
+[submodule "course/format/topcoll"]
+	path = course/format/topcoll
+	url = https://github.com/gjb2048/moodle-format_topcoll.git
+[submodule "theme/fordson"]
+	path = theme/fordson
+	url = https://github.com/dbnschools/moodle-theme_fordson
+[submodule "theme/moove"]
+	path = theme/moove
+	url = https://github.com/willianmano/moodle-theme_moove
+[submodule "local/boostnavigation"]
+	path = local/boostnavigation
+	url = https://github.com/moodle-an-hochschulen/moodle-local_boostnavigation
+[submodule "local/modcustomfields"]
+	path = local/modcustomfields
+	url = https://gitlab.com/adapta/moodle-local_modcustomfields
+[submodule "local/staticpage"]
+	path = local/staticpage
+	url = https://github.com/moodle-an-hochschulen/moodle-local_staticpage
+[submodule "filter/reusecontent"]
+	path = filter/reusecontent
+	url = https://github.com/gavgeris/reusecontent
+[submodule "moodle-theme_adaptable"]
+	path = moodle-theme_adaptable
+	url = https://gitlab.com/jezhops/moodle-theme_adaptable.git
+[submodule "theme/etwinning"]
+	path = theme/etwinning
+	url = https://github.com/gavgeris/moodle-theme_etwinning
+[submodule "theme/adaptable"]
+	path = theme/adaptable
+	url = https://gitlab.com/jezhops/moodle-theme_adaptable.git
+[submodule "enrol/autoenrol"]
+	path = enrol/autoenrol
+	url = https://github.com/bobopinna/moodle-enrol_autoenrol
+[submodule "local/reusecontent_ws"]
+	path = local/reusecontent_ws
+	url = https://github.com/gavgeris/local_reusecontent_ws.git
+[submodule "course/format/remuiformat"]
+	path = course/format/remuiformat
+	url = https://github.com/gavgeris/moodle-format_remuiformat

@@ -71,8 +71,18 @@ class auth_plugin_cas extends auth_plugin_ldap {
      * @return bool Authentication success or failure.
      */
     function user_login ($username, $password) {
+        // etwinning - AVGERIS
+        // Αποτρέπει την σύνδεση με λογαρασμό MySchool ή λογαριασμό σχολικών μονάδων
+        // Ο έλεγχος γίνεται με το πεδίο firstname. Όλοι οι παραπάνω λογ/μοι έχουν κενό στο firstname
         $this->connectCAS();
-        return phpCAS::isAuthenticated() && (trim(core_text::strtolower(phpCAS::getUser())) == $username);
+        if (phpCAS::isAuthenticated()) {
+            $userinfo = $this->get_userinfo($username);
+            return (trim(core_text::strtolower(phpCAS::getUser())) == $username) && (trim($userinfo["firstname"]) != "");
+        } else {
+            return false;
+        }
+
+        //return phpCAS::isAuthenticated() && (trim(core_text::strtolower(phpCAS::getUser())) == $username);
     }
 
     /**

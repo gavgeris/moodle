@@ -72,6 +72,21 @@ class behat_mod_forum_generator extends behat_generator_base {
     }
 
     /**
+     * Gets the group id from it's idnumber. It allows using 'All participants' as idnumber.
+     *
+     * @throws Exception
+     * @param string $idnumber
+     * @return int
+     */
+    protected function get_group_id($idnumber): int {
+        if ($idnumber === 'All participants') {
+            return -1;
+        }
+
+        return parent::get_group_id($idnumber);
+    }
+
+    /**
      * Preprocess discussion data.
      *
      * @param array $data Raw data.

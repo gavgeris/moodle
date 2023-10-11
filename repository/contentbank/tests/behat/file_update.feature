@@ -15,6 +15,8 @@ Feature: Updating a file in the content bank after using in a course
       | contextlevel | reference | contenttype     | user  | contentname | filepath                                  |
       | Course       | C1        | contenttype_h5p | admin | package.h5p | /h5p/tests/fixtures/guess-the-answer.h5p  |
 
+  # This scenario has Atto-specific steps. See MDL-75913 for further details.
+  @editor_atto
   Scenario: Referenced files is the default option and updates alias as well
     When I log in as "admin"
     And I am on "Course1" course homepage with editing mode on
@@ -57,6 +59,8 @@ Feature: Updating a file in the content bank after using in a course
     Then I should see "This is a new text"
     And I switch to the main frame
 
+  # This scenario has Atto-specific steps. See MDL-75913 for further details.
+  @editor_atto
   Scenario: Copied files should not be updated if the original is edited
     When I log in as "admin"
     And I am on "Course1" course homepage with editing mode on
