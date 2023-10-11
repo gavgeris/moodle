@@ -529,6 +529,27 @@ class moodle_url {
     }
 
     /**
+     * Get the url params as an array of key => value pairs.
+     *
+     * This helps in handling cases where url params contain arrays.
+     *
+     * @return array params array for templates.
+     */
+    public function export_params_for_template(): array {
+        $data = [];
+        foreach ($this->params as $key => $val) {
+            if (is_array($val)) {
+                foreach ($val as $index => $value) {
+                    $data[] = ['name' => $key.'['.$index.']', 'value' => $value];
+                }
+            } else {
+                $data[] = ['name' => $key, 'value' => $val];
+            }
+        }
+        return $data;
+    }
+
+    /**
      * Shortcut for printing of encoded URL.
      *
      * @return string
@@ -1108,7 +1129,12 @@ function page_get_doc_link_path(moodle_page $page) {
  */
 function validate_email($address) {
     global $CFG;
-    require_once($CFG->libdir.'/phpmailer/moodle_phpmailer.php');
+
+    if ($address === null || $address === false || $address === '') {
+        return false;
+    }
+
+    require_once("{$CFG->libdir}/phpmailer/moodle_phpmailer.php");
 
     return moodle_phpmailer::validateAddress($address) && !preg_match('/[<>]/', $address);
 }
@@ -1297,9 +1323,15 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
 
     switch ($format) {
         case FORMAT_HTML:
+            $filteroptions['stage'] = 'pre_format';
+            $text = $filtermanager->filter_text($text, $context, $filteroptions);
+            // Text is already in HTML format, so just continue to the next filtering stage.
+            $filteroptions['stage'] = 'pre_clean';
+            $text = $filtermanager->filter_text($text, $context, $filteroptions);
             if (!$options['noclean']) {
                 $text = clean_text($text, FORMAT_HTML, $options);
             }
+            $filteroptions['stage'] = 'post_clean';
             $text = $filtermanager->filter_text($text, $context, $filteroptions);
             break;
 
@@ -1319,18 +1351,27 @@ function format_text($text, $format = FORMAT_MOODLE, $options = null, $courseidd
             break;
 
         case FORMAT_MARKDOWN:
+            $filteroptions['stage'] = 'pre_format';
+            $text = $filtermanager->filter_text($text, $context, $filteroptions);
             $text = markdown_to_html($text);
-            if (!$options['noclean']) {
-                $text = clean_text($text, FORMAT_HTML, $options);
-            }
+            $filteroptions['stage'] = 'pre_clean';
+            $text = $filtermanager->filter_text($text, $context, $filteroptions);
+            // The markdown parser does not strip dangerous html so we need to clean it, even if noclean is set to true.
+            $text = clean_text($text, FORMAT_HTML, $options);
+            $filteroptions['stage'] = 'post_clean';
             $text = $filtermanager->filter_text($text, $context, $filteroptions);
             break;
 
         default:  // FORMAT_MOODLE or anything else.
+            $filteroptions['stage'] = 'pre_format';
+            $text = $filtermanager->filter_text($text, $context, $filteroptions);
             $text = text_to_html($text, null, $options['para'], $options['newlines']);
+            $filteroptions['stage'] = 'pre_clean';
+            $text = $filtermanager->filter_text($text, $context, $filteroptions);
             if (!$options['noclean']) {
                 $text = clean_text($text, FORMAT_HTML, $options);
             }
+            $filteroptions['stage'] = 'post_clean';
             $text = $filtermanager->filter_text($text, $context, $filteroptions);
             break;
     }
@@ -2218,7 +2259,7 @@ function get_html_lang($dir = false) {
     global $CFG;
 
     $currentlang = current_language();
-    if ($currentlang !== $CFG->lang && !get_string_manager()->translation_exists($currentlang)) {
+    if (isset($CFG->lang) && $currentlang !== $CFG->lang && !get_string_manager()->translation_exists($currentlang)) {
         // Use the default site language when the current language is not available.
         $currentlang = $CFG->lang;
         // Fix the current language.

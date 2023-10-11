@@ -1302,8 +1302,9 @@ function fix_utf8($value) {
             // Shortcut.
             return $value;
         }
-        // No null bytes expected in our data, so let's remove it.
-        $value = str_replace("\0", '', $value);
+
+        // Remove null bytes or invalid Unicode sequences from value.
+        $value = str_replace(["\0", "\xef\xbf\xbe", "\xef\xbf\xbf"], '', $value);
 
         // Note: this duplicates min_fix_utf8() intentionally.
         static $buggyiconv = null;
@@ -2879,7 +2880,8 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
 
     // Check that the user has agreed to a site policy if there is one - do not test in case of admins.
     // Do not test if the script explicitly asked for skipping the site policies check.
-    if (!$USER->policyagreed && !is_siteadmin() && !NO_SITEPOLICY_CHECK) {
+    // Or if the user auth type is webservice.
+    if (!$USER->policyagreed && !is_siteadmin() && !NO_SITEPOLICY_CHECK && $USER->auth !== 'webservice') {
         $manager = new \core_privacy\local\sitepolicy\manager();
         if ($policyurl = $manager->get_redirect_url(isguestuser())) {
             if ($preventredirect) {
@@ -5674,6 +5676,10 @@ function reset_course_userdata($data) {
             // Update calendar events for all modules.
             course_module_bulk_update_calendar_events($modname, $data->courseid);
         }
+        // Purge the course cache after resetting course start date. MDL-76936
+        if ($data->timeshift) {
+            course_modinfo::purge_course_cache($data->courseid);
+        }
     }
 
     // Mention unsupported mods.
@@ -8374,7 +8380,7 @@ function count_words($string) {
                 </                              # Start of close tag.
                 (?!                             # Do not match any of these specific close tag names.
                     a> | b> | del> | em> | i> |
-                    ins> | s> | small> |
+                    ins> | s> | small> | span> |
                     strong> | sub> | sup> | u>
                 )
                 \w+                             # But, apart from those execptions, match any tag name.
@@ -9033,11 +9039,12 @@ function make_unique_id_code($extra = '') {
  *
  * @param string $addr    The address you are checking
  * @param string $subnetstr    The string of subnet addresses
+ * @param bool $checkallzeros    The state to whether check for 0.0.0.0
  * @return bool
  */
-function address_in_subnet($addr, $subnetstr) {
+function address_in_subnet($addr, $subnetstr, $checkallzeros = false) {
 
-    if ($addr == '0.0.0.0') {
+    if ($addr == '0.0.0.0' && !$checkallzeros) {
         return false;
     }
     $subnets = explode(',', $subnetstr);
@@ -9277,6 +9284,25 @@ function mtrace($string, $eol="\n", $sleep=0) {
     if ($sleep) {
         sleep($sleep);
     }
+}
+
+/**
+ * Helper to {@see mtrace()} an exception or throwable, including all relevant information.
+ *
+ * @param Throwable $e the error to ouptput.
+ */
+function mtrace_exception(Throwable $e): void {
+    $info = get_exception_info($e);
+
+    $message = $info->message;
+    if ($info->debuginfo) {
+        $message .= "\n\n" . $info->debuginfo;
+    }
+    if ($info->backtrace) {
+        $message .= "\n\n" . format_backtrace($info->backtrace, true);
+    }
+
+    mtrace($message);
 }
 
 /**
@@ -10138,23 +10164,12 @@ function is_proxybypass( $url ) {
     // Get the possible bypass hosts into an array.
     $matches = explode( ',', $CFG->proxybypass );
 
-    // Check for a match.
-    // (IPs need to match the left hand side and hosts the right of the url,
-    // but we can recklessly check both as there can't be a false +ve).
-    foreach ($matches as $match) {
-        $match = trim($match);
+    // Check for a exact match on the IP or in the domains.
+    $isdomaininallowedlist = \core\ip_utils::is_domain_in_allowed_list($host, $matches);
+    $isipinsubnetlist = \core\ip_utils::is_ip_in_subnet_list($host, $CFG->proxybypass, ',');
 
-        // Try for IP match (Left side).
-        $lhs = substr($host, 0, strlen($match));
-        if (strcasecmp($match, $lhs)==0) {
-            return true;
-        }
-
-        // Try for host match (Right side).
-        $rhs = substr($host, -strlen($match));
-        if (strcasecmp($match, $rhs)==0) {
-            return true;
-        }
+    if ($isdomaininallowedlist || $isipinsubnetlist) {
+        return true;
     }
 
     // Nothing matched.
@@ -10478,52 +10493,33 @@ function get_course_display_name_for_list($course) {
  * Safe analogue of unserialize() that can only parse arrays
  *
  * Arrays may contain only integers or strings as both keys and values. Nested arrays are allowed.
- * Note: If any string (key or value) has semicolon (;) as part of the string parsing will fail.
- * This is a simple method to substitute unnecessary unserialize() in code and not intended to cover all possible cases.
  *
  * @param string $expression
  * @return array|bool either parsed array or false if parsing was impossible.
  */
 function unserialize_array($expression) {
-    $subs = [];
-    // Find nested arrays, parse them and store in $subs , substitute with special string.
-    while (preg_match('/([\^;\}])(a:\d+:\{[^\{\}]*\})/', $expression, $matches) && strlen($matches[2]) < strlen($expression)) {
-        $key = '--SUB' . count($subs) . '--';
-        $subs[$key] = unserialize_array($matches[2]);
-        if ($subs[$key] === false) {
-            return false;
-        }
-        $expression = str_replace($matches[2], $key . ';', $expression);
-    }
 
     // Check the expression is an array.
-    if (!preg_match('/^a:(\d+):\{([^\}]*)\}$/', $expression, $matches1)) {
+    if (!preg_match('/^a:(\d+):/', $expression)) {
         return false;
     }
-    // Get the size and elements of an array (key;value;key;value;....).
-    $parts = explode(';', $matches1[2]);
-    $size = intval($matches1[1]);
-    if (count($parts) < $size * 2 + 1) {
-        return false;
-    }
-    // Analyze each part and make sure it is an integer or string or a substitute.
-    $value = [];
-    for ($i = 0; $i < $size * 2; $i++) {
-        if (preg_match('/^i:(\d+)$/', $parts[$i], $matches2)) {
-            $parts[$i] = (int)$matches2[1];
-        } else if (preg_match('/^s:(\d+):"(.*)"$/', $parts[$i], $matches3) && strlen($matches3[2]) == (int)$matches3[1]) {
-            $parts[$i] = $matches3[2];
-        } else if (preg_match('/^--SUB\d+--$/', $parts[$i])) {
-            $parts[$i] = $subs[$parts[$i]];
-        } else {
-            return false;
+
+    $values = (array) unserialize_object($expression);
+
+    // Callback that returns true if the given value is an unserialized object, executes recursively.
+    $invalidvaluecallback = static function($value) use (&$invalidvaluecallback): bool {
+        if (is_array($value)) {
+            return (bool) array_filter($value, $invalidvaluecallback);
         }
+        return ($value instanceof stdClass) || ($value instanceof __PHP_Incomplete_Class);
+    };
+
+    // Iterate over the result to ensure there are no stray objects.
+    if (array_filter($values, $invalidvaluecallback)) {
+        return false;
     }
-    // Combine keys and values.
-    for ($i = 0; $i < $size * 2; $i += 2) {
-        $value[$parts[$i]] = $parts[$i+1];
-    }
-    return $value;
+
+    return $values;
 }
 
 /**

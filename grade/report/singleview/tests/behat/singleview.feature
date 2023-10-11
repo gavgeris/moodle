@@ -1,4 +1,4 @@
-@core @core_grades @gradereport_singleview
+@core @core_grades @gradereport_singleview @javascript
 Feature: We can use Single view
   As a teacher
   In order to view and edit grades
@@ -7,7 +7,7 @@ Feature: We can use Single view
   Background:
     Given the following "courses" exist:
       | fullname | shortname | category |
-      | Course 1 | C1 | 0 |
+      | Course 1 | C1        | 0        |
     And the following "users" exist:
       | username | firstname | lastname    | email                | idnumber | middlename | alternatename | firstnamephonetic | lastnamephonetic |
       | teacher1 | Teacher   | 1           | teacher1@example.com | t1       |            | fred          |                   |                  |
@@ -53,14 +53,11 @@ Feature: We can use Single view
     And the following config values are set as admin:
       | fullnamedisplay | firstnamephonetic,lastnamephonetic |
       | alternativefullnameformat | middlename, alternatename, firstname, lastname |
-    And I log in as "teacher1"
-    And I am on "Course 1" course homepage
-    Given I navigate to "View > Grader report" in the course gradebook
+    And I am on the "Course 1" "grades > Grader report > View" page logged in as "teacher1"
 
-  @javascript
   Scenario: I can update grades, add feedback and exclude grades.
     Given I navigate to "View > Single view" in the course gradebook
-    And I select "Student" from the "Select user..." singleselect
+    And I select "Student" from the "Select a user above to view all their grades" singleselect
     And I set the field "Override for Test assignment one" to "1"
     When I set the following fields to these values:
         | Grade for Test assignment one | 10.00 |
@@ -86,18 +83,15 @@ Feature: We can use Single view
     Then I should see "Grades were set for 2 items"
     And the field "Grade for Ann, Jill, Grainne, Beauchamp" matches value "12.05"
     And the field "Exclude for Jane, Nina, Niamh, Cholmondely" matches value "1"
-    And I select "new grade item 1" from the "Select grade item..." singleselect
+    And I select "new grade item 1" from the "Select a grade item above" singleselect
     And I set the field "Grade for Ann, Jill, Grainne, Beauchamp" to "Very good"
     And I press "Save"
     Then I should see "Grades were set for 1 items"
     And the following should exist in the "generaltable" table:
-        | First name (Alternate name) Surname | Grade |
+        | First name (Alternate name) Last name | Grade |
         | Ann, Jill, Grainne, Beauchamp | Very good |
-    And I log out
-    And I log in as "teacher2"
-    And I am on "Course 1" course homepage
-    Given I navigate to "View > Single view" in the course gradebook
-    And I select "Student" from the "Select user..." singleselect
+    And I am on the "Course 1" "grades > Single view > View" page logged in as "teacher2"
+    And I select "Student" from the "Select a user above to view all their grades" singleselect
     And the "Exclude for Test assignment one" "checkbox" should be disabled
     And the "Override for Test assignment one" "checkbox" should be enabled
 
@@ -112,7 +106,7 @@ Feature: We can use Single view
     Given I follow "Single view for Ann, Jill, Grainne, Beauchamp"
     Then I should see "Gronya,Beecham"
     When I set the field "For" to "All grades"
-    And I set the field "Insert value" to "1.0"
+    And I set the field "Insert new grade" to "1.0"
     And I set the field "Perform bulk insert" to "1"
     And I press "Save"
     Then I should see "Grades were set for 6 items"
@@ -124,7 +118,7 @@ Feature: We can use Single view
     And I follow "Single view for Ann, Jill, Grainne, Beauchamp"
     And I should see "Gronya,Beecham"
     When I set the field "For" to "All grades"
-    And I set the field "Insert value" to "1#25"
+    And I set the field "Insert new grade" to "1#25"
     And I set the field "Perform bulk insert" to "1"
     And I press "Save"
     Then I should see "Grades were set for 6 items"

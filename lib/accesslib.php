@@ -4156,21 +4156,21 @@ function get_user_capability_contexts(string $capability, bool $getcategories, $
         $fieldlist = \core\access\get_user_capability_course_helper::map_fieldnames($categoryfieldsexceptid);
         if ($categoryorderby) {
             $fields = explode(',', $categoryorderby);
-            $orderby = '';
+            $categoryorderby = '';
             foreach ($fields as $field) {
-                if ($orderby) {
-                    $orderby .= ',';
+                if ($categoryorderby) {
+                    $categoryorderby .= ',';
                 }
-                $orderby .= 'c.'.$field;
+                $categoryorderby .= 'c.'.$field;
             }
-            $orderby = 'ORDER BY '.$orderby;
+            $categoryorderby = 'ORDER BY '.$categoryorderby;
         }
         $rs = $DB->get_recordset_sql("
             SELECT c.id $fieldlist
               FROM {course_categories} c
                JOIN {context} x ON c.id = x.instanceid AND x.contextlevel = ?
             $contextlimitsql
-            $orderby", array_merge([CONTEXT_COURSECAT], $contextlimitparams));
+            $categoryorderby", array_merge([CONTEXT_COURSECAT], $contextlimitparams));
         $basedlimit = $limit;
         foreach ($rs as $category) {
             $categories[] = $category;
@@ -4179,6 +4179,7 @@ function get_user_capability_contexts(string $capability, bool $getcategories, $
                 break;
             }
         }
+        $rs->close();
     }
 
     $courses = [];
@@ -4271,6 +4272,11 @@ function role_switch($roleid, context $context) {
 
     if (!isset($USER->access)) {
         load_all_capabilities();
+    }
+
+    // Make sure that course index is refreshed.
+    if ($coursecontext = $context->get_course_context()) {
+        core_courseformat\base::session_cache_reset(get_course($coursecontext->instanceid));
     }
 
     // Add the switch RA
@@ -6140,13 +6146,14 @@ class context_helper extends context {
     }
 
     /**
-     * Preloads context information from db record and strips the cached info.
+     * Preloads context cache with information from db record and strips the cached info.
      *
      * The db request has to contain all columns from context_helper::get_preload_record_columns().
      *
      * @static
      * @param stdClass $rec
-     * @return void (modifies $rec)
+     * @return void This is intentional. See MDL-37115. You will need to get the context
+     *      in the normal way, but it is now cached, so that will be fast.
      */
      public static function preload_from_record(stdClass $rec) {
          context::preload_from_record($rec);
