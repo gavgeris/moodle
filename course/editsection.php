@@ -101,6 +101,7 @@ $customdata = array(
     'editoroptions' => $editoroptions,
     'defaultsectionname' => $defaultsectionname
 );
+
 $mform = $courseformat->editsection_form($PAGE->url, $customdata);
 
 // set current value, make an editable copy of section_info object
