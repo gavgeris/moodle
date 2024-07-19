@@ -116,11 +116,11 @@ FROM
 					SELECT DISTINCT epimorfoumenos
 					  FROM group_epimorfwth
 					 WHERE 1=1
-					   AND courseid != 4298
+					   AND courseid = 4315
 					   AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
 		    )
 		    AND mg.courseid = c.instanceid) table1 
-		WHERE mcc.name LIKE '2022-23'
+		WHERE mcc.name LIKE '2023-24'
 		  AND mc.category = mcc.id
 		  AND ma.course = mc.id 
 		  AND mas.assignment = ma.id 
@@ -217,7 +217,7 @@ FROM
 	  AND epimorfwths = mu2.`id`
 	  AND mg.id = groupid
 	  AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών'))) table1 
-WHERE mcc.name LIKE '2022-23'
+WHERE mcc.name LIKE '2023-24'
   AND mc.category = mcc.id
 
   AND mg.courseid = mc.id 
