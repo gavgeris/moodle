@@ -55,11 +55,11 @@ $result3= array();
 
 
 // Fetch SQLStatement 1
-$rs = $DB->get_recordset_sql($sqlstmt1, array($courseid, $USER->id, $courseid));
-foreach ($rs as $record) {
-	array_push($result1, json_decode(json_encode($record), True));
-}
-$rs->close();
+//$rs = $DB->get_recordset_sql($sqlstmt1, array($courseid, $USER->id, $courseid));
+//foreach ($rs as $record) {
+//	array_push($result1, json_decode(json_encode($record), True));
+//}
+//$rs->close();
 // Fetch SQLStatement 2
 $rs = $DB->get_recordset_sql($sqlstmt2, array($courseid, $USER->id, $courseid, $USER->id));
 foreach ($rs as $record) {
@@ -133,7 +133,8 @@ Fete_ViewControl_DataGrid::getInstance($result2)
     'WEEK27' => array('header' => 'Ε27'),
     'WEEK28' => array('header' => 'Ε28'),
     'WEEK29' => array('header' => 'Ε29'),
-    'WEEK30' => array('header' => 'Ε30')
+    'WEEK30' => array('header' => 'Ε30'),
+	'courseid' => array('header' => 'ID')
 ))
 ->setStartingCounter(1)
 ->setRowClass('row')
@@ -157,6 +158,7 @@ Fete_ViewControl_DataGrid::getInstance($result3)
 ?>
 <h2>Αναλυτικά</h2>
 <?php
+/*
 Fete_ViewControl_DataGrid::getInstance($result1)
 ->setGridAttributes(array('class' => 'details table table-striped table-hover'))
 ->enableSorting(true)
@@ -173,6 +175,7 @@ Fete_ViewControl_DataGrid::getInstance($result1)
 ->setStartingCounter(1)
 ->setRowClass('row')
 ->render();
+*/
 ?>
 
 <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/jszip-2.5.0/dt-1.10.22/b-1.6.5/b-html5-1.6.5/datatables.min.css"/>

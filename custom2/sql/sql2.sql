@@ -36,7 +36,6 @@ SELECT 	epimorfwths,
 	id as courseid,
         fullname,
 	NAME,
-	syntonisths,
 	cur_week
 FROM
 (
@@ -80,7 +79,6 @@ FROM
 		  mc.id,
 		  mc.fullname,
 		  mg.name,
-		  sevw.fullname AS syntonisths,
 		  DATEDIFF(DATE_ADD(NOW(),INTERVAL -1 DAY), FROM_UNIXTIME(mc.startdate)) DIV 7 + 1 AS cur_week
 		FROM
 		  mdl_assign_submission mas,
@@ -92,7 +90,6 @@ FROM
 		 /* For display week */  
 		  mdl_course_sections mcs,
 		  mdl_course_modules mcm,  
-		  syntonisths_epimorfwth_vw sevw,
 		    (SELECT 
 		    mg.courseid,
 		    b.firstname,
@@ -118,10 +115,10 @@ FROM
 					 WHERE 1=1
 					  AND courseid = ?
 					   AND epimorfwths = ?					   
-					   AND ((groupname != 'Συντονιστές Επιμορφωτών') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
+					   AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
 		    )
 		    AND mg.courseid = c.instanceid) table1 
-		WHERE mcc.name LIKE '2022-23'
+		WHERE mcc.name LIKE '2023-24'
 		  AND mc.category = mcc.id
 		  AND ma.course = mc.id 
 		  AND mas.assignment = ma.id 
@@ -133,7 +130,6 @@ FROM
 		  AND table1.courseid = mc.id 
 		  AND table1.groupid = mg.id 
 		  
-		  AND table1.id = sevw.userid  
 		  
 		/* Display week no */  
 		  AND mcs.course = mg.courseid
@@ -196,7 +192,6 @@ COUNT(DISTINCT mfd.id) AS plithos,
 		  mc.id,
 		  mc.fullname,
 		  mg.name,
-		  sevw.fullname AS syntonisths,
 		  DATEDIFF(DATE_ADD(NOW(),INTERVAL -1 DAY), FROM_UNIXTIME(mc.startdate)) DIV 7 + 1 AS cur_week
 		 
 FROM
@@ -210,7 +205,6 @@ FROM
   /* For display week */  
   mdl_course_sections mcs,
   mdl_course_modules mcm,  
-  syntonisths_epimorfwth_vw sevw,  
   
   (SELECT ge.courseid, groupid, epimorfoumenos AS id, epimorfwths, mg.name AS groupname, mu2.`firstname`, mu2.lastname, mu2.email
 	FROM group_epimorfwth ge, mdl_user mu1, mdl_user mu2, mdl_groups mg
@@ -219,8 +213,8 @@ FROM
 	  AND mg.id = groupid
 	  AND ge.courseid = ?
 	   AND epimorfwths = ?					   
-	  AND ((groupname != 'Συντονιστές Επιμορφωτών') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών'))) table1 
-WHERE mcc.name LIKE '2022-23'
+	  AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών'))) table1 
+WHERE mcc.name LIKE '2023-24'
   AND mc.category = mcc.id
 
   AND mg.courseid = mc.id 
@@ -233,8 +227,6 @@ WHERE mcc.name LIKE '2022-23'
   AND mgm.userid = mfp.userid 
   AND mf.assessed != 0
   
-  /* Συντονιστης */  
-  AND table1.epimorfwths = sevw.userid  
 
 /* Display week no */  
   AND mcs.course = mc.id

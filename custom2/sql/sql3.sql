@@ -8,7 +8,7 @@ WHERE a.roleid = 4
   AND mg.courseid = d.id
   AND c.instanceid = d.id
   AND mcc.id = d.category
-  AND mcc.name = '2022-23'
+  AND mcc.name = '2023-24'
   AND b.id  IN (
 			SELECT DISTINCT epimorfoumenos
 			  FROM group_epimorfwth

@@ -29,6 +29,8 @@ git submodule add https://github.com/justinhunt/moodle-atto_generico lib/editor/
 git submodule add https://github.com/ndunand/moodle-atto_morebackcolors lib/editor/atto/plugins/morebackcolors
 git submodule add https://github.com/moodle-an-hochschulen/moodle-atto_styles lib/editor/atto/plugins/styles
 git submodule add https://github.com/sharpchi/moodle-atto_templates4u lib/editor/atto/plugins/templates4u
+git submodule add https://github.com/rogersegu/moodle-atto_c4l/ lib/editor/atto/plugins/c4l
+
 
 #tools
 git submodule add https://github.com/doiphode/moodle-tool_clearbackupfiles admin/tool/clearbackupfiles
