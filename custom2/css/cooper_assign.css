@@ -1,0 +1,23 @@
+#saveBtn {
+  margin-top: 5px;
+}
+
+.wrapper {
+  text-align: center;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+}
+th, td {
+    text-align: center;
+    padding: 15px;
+    font-size: 18px;
+}
+th {
+    background-color: #5499C7;
+    color: white;
+    font-style: bold;
+    font-size: 35px;
+}
