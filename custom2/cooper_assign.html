@@ -1,0 +1,37 @@
+<head>
+ <meta charset="UTF-8">
+<link rel="stylesheet" type="text/css" href="./css/sweetalert.css" media="screen" />
+<link rel="stylesheet" type="text/css" href="./css/cooper_assign.css" media="screen" />
+
+<script src="./js/responseHTML.js" type="text/javascript"></script>
+<script src="./js/sweetalert.min.js" type="text/javascript"></script>
+
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<script src="http://code.jquery.com/jquery-3.3.1.min.js"</script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<script src="./js/cooper_assign.js"></script>
+</head>
+<body>
+<div class="panel panel-primary mypanel">
+  <div class="panel-heading">
+    <h3 class="panel-title">Panel title</h3>
+  </div>
+  <div class="panel-body">
+    <div class="row">
+		<div class="col-md-6 wrapper">
+			<h4><strong>Εισάγετε το κείμενο που θέλετε να κοινοποιήσετε</strong></h4>
+			<input id="sharedkey" type="text" class="form-control" placeholder="Text input">
+			<button  id="saveBtn" type="button" class="btn btn-primary">Αποθήκευση</button>
+		</div>
+		<div class="col-md-6 wrapper">
+			<button id="findPartnerBtn" type="button" class="btn btn-primary">Βρες Συνεργάτες</button>
+			<table id="partners" class="table-striped"></table>
+		</div>
+	</div>
+  </div>
+  <div class="panel-footer">Panel footer</div>
+</div>
+</body>
