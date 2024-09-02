@@ -38,7 +38,7 @@ git submodule add https://github.com/rogersegu/moodle-atto_c4l/ lib/editor/atto/
 git submodule add https://github.com/ecampbell/moodle-atto_wordimport lib/editor/atto/plugins/wordimport
 
 #tinymce plugins
-git submodule add https://github.com/reskit/moodle-tiny_c4l lib/editor/tiny/plugins/tiny_c4l
+git submodule add https://github.com/reskit/moodle-tiny_c4l lib/editor/tiny/plugins/c4l
 
 
 #tools
