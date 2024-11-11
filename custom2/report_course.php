@@ -40,18 +40,33 @@ if ($query['id'] != "") {
 } else {
 	$courseid = $_REQUEST["courseid"];
 }
+if (isset($_REQUEST['plus'])) {
+    $isteacherplus = true;
+    $sqlstmtfile = 'sql/sql_teacherplus.sql';
+} else {
+    $isteacherplus = false;
+    $sqlstmtfile = 'sql/sql_teacher.sql';
+}
+
 
 require_login();
 if (isguestuser()) {
     print_error('noguest');
 }
 
-$sqlstmt4 = file_get_contents('sql/sql_teacher.sql');
+
+$sqlstmt4 = file_get_contents($sqlstmtfile);
 
 
 $result4= array();
 // Fetch SQLStatement 4
-$rs = $DB->get_recordset_sql($sqlstmt4, array($courseid, $USER->id, $courseid, $courseid, $USER->id, $courseid));
+
+if ($isteacherplus) {
+    $rs = $DB->get_recordset_sql($sqlstmt4, array($courseid, $courseid));
+} else {
+    $rs = $DB->get_recordset_sql($sqlstmt4, array($courseid, $USER->id, $courseid, $courseid, $USER->id, $courseid));
+}
+
 //$rs = $DB->get_recordset_sql($sqlstmt4, array(2128, 5567, 2128, 2128, 5567, 2128));
 
 foreach ($rs as $record) {
