@@ -89,7 +89,7 @@ FROM
 		  mdl_groups_members mgm,
 		 /* For display week */  
 		  mdl_course_sections mcs,
-		  mdl_course_modules mcm,  
+		  mdl_course_modules mcm,
 		    (SELECT 
 		    mg.courseid,
 		    b.firstname,
@@ -103,22 +103,22 @@ FROM
 		    mdl_user b,
 		    mdl_context c,
 		    mdl_groups mg,
-		    mdl_groups_members mgm 
+		    mdl_groups_members mgm
 		  WHERE a.roleid IN (3, 4)
 		    AND a.userid = b.id 
 		    AND a.contextid = c.id 
 		    AND mg.id = mgm.groupid 
-		    AND mgm.userid = a.userid 
+		    AND mgm.userid = a.userid
 		    AND b.id IN (
 					SELECT DISTINCT epimorfoumenos
 					  FROM group_epimorfwth
 					 WHERE 1=1
 					  AND courseid = ?
-					   AND epimorfwths = ?					   
+					   AND epimorfwths = ?
 					   AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
 		    )
-		    AND mg.courseid = c.instanceid) table1 
-		WHERE mcc.name LIKE '2023-24'
+		    AND mg.courseid = c.instanceid) table1
+		WHERE mcc.name LIKE '2024-25'
 		  AND mc.category = mcc.id
 		  AND ma.course = mc.id 
 		  AND mas.assignment = ma.id 
@@ -214,7 +214,7 @@ FROM
 	  AND ge.courseid = ?
 	   AND epimorfwths = ?					   
 	  AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών'))) table1 
-WHERE mcc.name LIKE '2023-24'
+WHERE mcc.name LIKE '2024-25'
   AND mc.category = mcc.id
 
   AND mg.courseid = mc.id 

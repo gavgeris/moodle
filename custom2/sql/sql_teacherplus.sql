@@ -1,6 +1,6 @@
 SELECT
     CONCAT('<a target="_blank" href="',
-           'http://seminars.etwinning.gr/mod/assign/view.php&quest;id=',(SELECT id FROM mdl_course_modules mcm WHERE instance = ma.id AND course = mc.id AND module = 1 LIMIT 1),'&action=grading">',
+           'https-://seminars.etwinning.gr/mod/assign/view.php&quest;id=',(SELECT id FROM mdl_course_modules mcm WHERE instance = ma.id AND course = mc.id AND module = 1 LIMIT 1),'&action=grading">',
            CONCAT(CONCAT(LPAD(ROUND(DATEDIFF(FROM_UNIXTIME(allowsubmissionsfromdate), FROM_UNIXTIME(mc.startdate)) / 7) + 1,2,'0'), " - "), ma.name),
            '</a>'
         ) AS assignment,
@@ -44,7 +44,7 @@ WHERE ma.course = mc.id
 
   AND table1.courseid = mc.id
   AND table1.groupid = mg.id
-  AND datediff(from_unixtime(ma.cutoffdate), now()) <= 5 -- Εργασίες που κλειδώνουν σε 5 μέρες
+  AND datediff(from_unixtime(ma.cutoffdate), now()) <= 7 -- Εργασίες που κλειδώνουν σε 5 μέρες
   AND ( NOT EXISTS (SELECT 1
                     FROM mdl_assign_grades mag
                     WHERE mag.assignment = mas.assignment

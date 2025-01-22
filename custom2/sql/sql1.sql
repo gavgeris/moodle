@@ -31,16 +31,14 @@ FROM
     AND a.userid = b.id 
     AND a.contextid = c.id 
     AND mg.id = mgm.groupid 
-    AND mgm.userid = a.userid 
-    AND b.id IN (
-			SELECT DISTINCT epimorfoumenos
-			  FROM group_epimorfwth
-			 WHERE courseid = ?
-			   AND epimorfwths = ?
-			   AND ((groupname != 'Συντονιστές Επιμορφωτών') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
-    )
-    AND mg.courseid = c.instanceid) table1 
-WHERE mcc.name LIKE '2023-24'
+    AND mgm.userid = a.userid
+
+    AND b.id = ge.epimorfoumenos
+    and ge.courseid = ?
+    AND ge.epimorfwths = ?
+    AND ((ge.groupname != 'Συντονιστές Επιμορφωτών') OR (ge.roleid = 1 AND ge.groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
+    AND mg.courseid = c.instanceid) table1
+WHERE mcc.name LIKE '2024-25'
   AND mc.category = mcc.id
   AND ma.course = mc.id 
   AND mas.assignment = ma.id 
