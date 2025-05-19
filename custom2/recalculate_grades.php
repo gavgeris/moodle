@@ -1,4 +1,7 @@
 <?php
+// Declare that this is a CLI script before including Moodle's config
+define('CLI_SCRIPT', true);
+
 require(__DIR__ . '/../config.php');
 require_once($CFG->libdir . '/gradelib.php');
 
