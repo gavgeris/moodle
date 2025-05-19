@@ -53,6 +53,12 @@ require_login();
 if (isguestuser()) {
     print_error('noguest');
 }
+if (is_siteadmin()) {
+    $isteacherplus = true;
+    $sqlstmtfile = 'sql/sql_teacherplus.sql';
+//    echo ('Η λίστα των εργασιών δεν εμφανίζεται στους διαχειριστές');
+//    return;
+}
 
 
 $sqlstmt4 = file_get_contents($sqlstmtfile);
