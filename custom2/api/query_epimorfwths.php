@@ -23,7 +23,7 @@ SELECT DISTINCT mu.`lastname`, mu.`firstname`, mu.email,
 FROM group_epimorfwth ge, mdl_course_categories mcc, mdl_course mc LEFT JOIN mdl_course_protokolo mcp ON (mcp.courseid = mc.id), mdl_user mu
 WHERE ge.`courseid` = mc.`id`
   AND mc.`category` = mcc.`id`
-  AND mcc.name IN ( '2023-24', '2022-23', '2021-22', '2020-21', '2019-20', '2018-19','etwinning')
+  AND mcc.name IN ( '2025-26', '2024-25', '2023-24', '2022-23', '2021-22', '2020-21', '2019-20', '2018-19','etwinning')
   AND groupname NOT LIKE '%Συντονιστές Επιμορφωτών%'
   AND ge.epimorfwths = mu.id
   and lastname like ?

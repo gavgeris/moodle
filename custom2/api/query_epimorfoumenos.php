@@ -22,7 +22,7 @@ select a.lastname, a.firstname, a.email,
        mcp.end_date, mcp.sign_date,  mcp.duration, mcp.start_date,
        a.finalgrade, (select gradepass from mdl_grade_items where courseid = a.courseid and itemtype = 'course') as gradepass
 from apotelesmata_vw a, mdl_course_protokolo mcp
-where ep_year in ( '2023-24', '2022-23', '2021-22', '2020-21', '2019-20', '2018-19', 'etwinning')
+where ep_year in ( '2025-26', '2024-25', '2023-24', '2022-23', '2021-22', '2020-21', '2019-20', '2018-19', 'etwinning')
   and lastname = ?
   and firstname like concat('%',?,'%')
   and a.courseid = mcp.courseid
