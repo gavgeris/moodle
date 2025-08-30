@@ -329,18 +329,41 @@ function user_get_user_details($user, $course = null, array $userfields = array(
         $userfields[] = 'fullname';
     }
 
+    // Callback check for plugins to allow or prevent access.
+    $forceallow = true;
+    $currentuser = ($user->id == $USER->id);
+    $isadmin = is_siteadmin($USER);
+    if (!$currentuser) {
+        $forceallow = false;
+        $callbackresult = user_process_profile_callbacks($user, $course);
+        if ($callbackresult === core_user::VIEWPROFILE_PREVENT) {
+            return null; // Access denied.
+        } else if ($callbackresult === core_user::VIEWPROFILE_FORCE_ALLOW) {
+            $forceallow = true;
+        }
+    }
+
     if (!empty($course)) {
         $context = context_course::instance($course->id);
         $usercontext = context_user::instance($user->id);
-        $canviewdetailscap = (has_capability('moodle/user:viewdetails', $context) || has_capability('moodle/user:viewdetails', $usercontext));
     } else {
         $context = context_user::instance($user->id);
         $usercontext = $context;
-        $canviewdetailscap = has_capability('moodle/user:viewdetails', $usercontext);
     }
 
-    $currentuser = ($user->id == $USER->id);
-    $isadmin = is_siteadmin($USER);
+    if (!$forceallow) {
+        // Existing capability checks.
+        if (!empty($course)) {
+            $canviewdetailscap = (has_capability('moodle/user:viewdetails', $context) || has_capability('moodle/user:viewdetails', $usercontext));
+        } else {
+            $canviewdetailscap = has_capability('moodle/user:viewdetails', $usercontext);
+        }
+
+        if (!$currentuser && !$canviewdetailscap && !has_coursecontact_role($user->id)) {
+            // Skip this user details.
+            return null;
+        }
+    }
 
     // This does not need to include custom profile fields as it is only used to check specific
     // fields below.
@@ -364,28 +387,28 @@ function user_get_user_details($user, $course = null, array $userfields = array(
         $canaccessallgroups = false;
     }
 
-    if (!$currentuser && !$canviewdetailscap && !has_coursecontact_role($user->id)) {
-        // Skip this user details.
-        return null;
-    }
+    // User ID and fullname are always included.
+    $userdetails = [
+        'id' => $user->id,
+        'fullname' => fullname($user, $canviewfullnames),
+    ];
 
-    $userdetails = array();
-    $userdetails['id'] = $user->id;
+    // User first/lastname included if capability check passes, or the same is present in fullname.
+    $dummyusername = core_user::get_dummy_fullname($context, ['override' => $canviewfullnames]);
+    if (in_array('firstname', $userfields) &&
+            ($canviewfullnames || core_text::strrpos($dummyusername, 'firstname') !== false)) {
+        $userdetails['firstname'] = $user->firstname;
+    }
+    if (in_array('lastname', $userfields) &&
+            ($canviewfullnames || core_text::strrpos($dummyusername, 'lastname') !== false)) {
+        $userdetails['lastname'] = $user->lastname;
+    }
 
     if (in_array('username', $userfields)) {
         if ($currentuser or has_capability('moodle/user:viewalldetails', $context)) {
             $userdetails['username'] = $user->username;
         }
     }
-    if ($isadmin or $canviewfullnames) {
-        if (in_array('firstname', $userfields)) {
-            $userdetails['firstname'] = $user->firstname;
-        }
-        if (in_array('lastname', $userfields)) {
-            $userdetails['lastname'] = $user->lastname;
-        }
-    }
-    $userdetails['fullname'] = fullname($user, $canviewfullnames);
 
     if (in_array('customfields', $userfields)) {
         $categories = profile_get_user_fields_with_data_by_category($user->id);
@@ -1190,29 +1213,10 @@ function user_can_view_profile($user, $course = null, $usercontext = null) {
     }
 
     // Use callbacks so that (primarily) local plugins can prevent or allow profile access.
-    $forceallow = false;
-    $plugintypes = get_plugins_with_function('control_view_profile');
-    foreach ($plugintypes as $plugins) {
-        foreach ($plugins as $pluginfunction) {
-            $result = $pluginfunction($user, $course, $usercontext);
-            switch ($result) {
-                case core_user::VIEWPROFILE_DO_NOT_PREVENT:
-                    // If the plugin doesn't stop access, just continue to next plugin or use
-                    // default behaviour.
-                    break;
-                case core_user::VIEWPROFILE_FORCE_ALLOW:
-                    // Record that we are definitely going to allow it (unless another plugin
-                    // returns _PREVENT).
-                    $forceallow = true;
-                    break;
-                case core_user::VIEWPROFILE_PREVENT:
-                    // If any plugin returns PREVENT then we return false, regardless of what
-                    // other plugins said.
-                    return false;
-            }
-        }
-    }
-    if ($forceallow) {
+    $callbackresult = user_process_profile_callbacks($user, $course, $usercontext);
+    if ($callbackresult === core_user::VIEWPROFILE_PREVENT) {
+        return false; // Access denied.
+    } else if ($callbackresult === core_user::VIEWPROFILE_FORCE_ALLOW) {
         return true;
     }
 
@@ -1256,6 +1260,34 @@ function user_can_view_profile($user, $course = null, $usercontext = null) {
         }
     }
     return false;
+}
+
+/**
+ * Process plugin callbacks for profile visibility.
+ *
+ * @param stdClass $user The user whose profile is being checked.
+ * @param stdClass|null $course The course context, if applicable.
+ * @param context|null $usercontext The user context, if applicable.
+ * @return int One of the core_user::VIEWPROFILE_* constants.
+ */
+function user_process_profile_callbacks(stdClass $user, ?stdClass $course = null, ?stdClass $usercontext = null): int {
+    $plugintypes = get_plugins_with_function('control_view_profile');
+    $forceallow = false;
+
+    foreach ($plugintypes as $plugins) {
+        foreach ($plugins as $pluginfunction) {
+            $result = $pluginfunction($user, $course, $usercontext);
+            switch ($result) {
+                case core_user::VIEWPROFILE_FORCE_ALLOW:
+                    $forceallow = true;
+                    break;
+                case core_user::VIEWPROFILE_PREVENT:
+                    return core_user::VIEWPROFILE_PREVENT;
+            }
+        }
+    }
+
+    return $forceallow ? core_user::VIEWPROFILE_FORCE_ALLOW : core_user::VIEWPROFILE_DO_NOT_PREVENT;
 }
 
 /**

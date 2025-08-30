@@ -23,6 +23,7 @@ use context_system;
 use context_user;
 use core\context;
 use core_component;
+use core_user;
 use html_writer;
 use lang_string;
 use moodle_url;
@@ -202,10 +203,11 @@ class user extends base {
         ))
             ->add_joins($this->get_joins())
             ->add_fields($fullnameselect)
-            ->set_type(column::TYPE_TEXT)
             ->set_is_sortable($this->is_sortable('fullname'), $fullnamesort)
-            ->add_callback(static function(?string $value, stdClass $row) use ($viewfullnames): string {
-                if ($value === null) {
+            ->add_callback(static function($value, stdClass $row) use ($viewfullnames): string {
+
+                // Ensure we have at least one field present.
+                if (count(array_filter((array) $row, fn($field) => $field !== null)) === 0) {
                     return '';
                 }
 
@@ -233,12 +235,12 @@ class user extends base {
                 ->add_joins($this->get_joins())
                 ->add_fields($fullnameselect)
                 ->add_field("{$usertablealias}.id")
-                ->set_type(column::TYPE_TEXT)
                 ->set_is_sortable($this->is_sortable($fullnamefield), $fullnamesort)
-                ->add_callback(static function(?string $value, stdClass $row) use ($fullnamefield, $viewfullnames): string {
+                ->add_callback(static function($value, stdClass $row) use ($fullnamefield, $viewfullnames): string {
                     global $OUTPUT;
 
-                    if ($value === null) {
+                    // Ensure we have at least one field present.
+                    if (count(array_filter((array) $row, fn($field) => $field !== null)) === 0) {
                         return '';
                     }
 
@@ -262,7 +264,7 @@ class user extends base {
                             fullname($row, $viewfullnames));
                     }
 
-                    return $value;
+                    return (string) $value;
                 });
 
             // Picture fields need some more data.
@@ -398,10 +400,8 @@ class user extends base {
 
         $namefields = fields::get_name_fields(true);
 
-        // Create a dummy user object containing all name fields.
-        $dummyuser = (object) array_combine($namefields, $namefields);
         $viewfullnames = has_capability('moodle/site:viewfullnames', context_system::instance());
-        $dummyfullname = fullname($dummyuser, $viewfullnames);
+        $dummyfullname = core_user::get_dummy_fullname(null, ['override' => $viewfullnames]);
 
         // Extract any name fields from the fullname format in the order that they appear.
         $matchednames = array_values(order_in_string($namefields, $dummyfullname));

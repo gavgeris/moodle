@@ -1038,14 +1038,25 @@ EOF;
             return;
         }
 
-        // Look for any DOM element with deprecated message in before pseudo-element.
+        // Look for DOM elements with deprecated message in before pseudo-element.
         $js = <<<EOF
-            [...document.querySelectorAll('*')].some(
-                el => window.getComputedStyle(el, ':before').content === '"Deprecated style in use"'
-            );
+            [...document.querySelectorAll('*')].flatMap(el => {
+                const beforeContent = window.getComputedStyle(el, ':before').content;
+                if (beforeContent.startsWith('"Deprecated style in use')) {
+                    const deprecatedClass = beforeContent.match(/\(([^)]+)\)/)?.[1] ?? 'unknown';
+                    return [deprecatedClass + ' (found in: ' + el.classList + ')'];
+                }
+                return [];
+            });
         EOF;
-        if ($this->evaluate_script($js)) {
-            throw new \Exception(html_entity_decode("Deprecated style in use", ENT_COMPAT));
+
+        $deprecations = $this->evaluate_script($js);
+        if ($deprecations) {
+            $deprecationdata = "Deprecated styles found:\n";
+            foreach ($deprecations as $deprecation) {
+                $deprecationdata .= "  {$deprecation}\n";
+            }
+            throw new \Exception(html_entity_decode($deprecationdata, ENT_COMPAT));
         }
     }
 
@@ -1065,19 +1076,37 @@ EOF;
     /**
      * Helper function to execute api in a given context.
      *
-     * @param string $contextapi context in which api is defined.
+     * Note: The contextapi does not support a callback.
+     *
+     * @param string|array $contextapi context in which api is defined.
      * @param array|mixed $params list of params to pass or a single parameter
      * @throws Exception
+     * @throws DriverException
      */
-    protected function execute($contextapi, $params = array()) {
+    protected function execute(
+        string|array $contextapi,
+        mixed $params = [],
+    ): void {
         if (!is_array($params)) {
-            $params = array($params);
+            $params = [$params];
+        }
+
+        if (is_string($contextapi)) {
+            $contextapi = explode('::', $contextapi);
+        }
+
+        if (count($contextapi) !== 2) {
+            throw new DriverException('Invalid contextapi format, expected "context::api" or ["context", "api"]');
         }
 
         // Get required context and execute the api.
-        $contextapi = explode("::", $contextapi);
-        $context = behat_context_helper::get($contextapi[0]);
-        call_user_func_array(array($context, $contextapi[1]), $params);
+        [$classname, $method] = $contextapi;
+        if (!is_string($classname) || !is_string($method)) {
+            throw new DriverException('Invalid contextapi format, expected "context::api" or ["context", "api"]');
+        }
+
+        $context = behat_context_helper::get($classname);
+        call_user_func_array([$context, $method], $params);
 
         // NOTE: Wait for pending js and look for exception are not optional, as this might lead to unexpected results.
         // Don't make them optional for performance reasons.
@@ -1684,6 +1713,32 @@ EOF;
     }
 
     /**
+     * Get the user object from an identifier.
+     *
+     * The user username and email fields are checked.
+     *
+     * @param string $identifier The user's username or email.
+     * @return stdClass|null The user id or null if not found.
+     */
+    protected function get_user_by_identifier(string $identifier): ?stdClass {
+        global $DB;
+
+        $sql = <<<EOF
+            SELECT *
+              FROM {user}
+             WHERE username = :username
+                OR email = :email
+        EOF;
+
+        $result = $DB->get_record_sql($sql, [
+            'username' => $identifier,
+            'email' => $identifier,
+        ]);
+
+        return $result ?: null;
+    }
+
+    /**
      * Get the user id from an identifier.
      *
      * The user username and email fields are checked.
@@ -1707,5 +1762,20 @@ EOF;
         ]);
 
         return $result ?: null;
+    }
+
+    /**
+     * Prepare an xpath for insertion into Selenium JavaScript.
+     *
+     * @param string $xpath
+     * @return string
+     */
+    protected function prepare_xpath_for_javascript(string $xpath): string {
+        $newlines = [
+            "\r\n",
+            "\r",
+            "\n",
+        ];
+        return str_replace($newlines, ' ', $xpath);
     }
 }

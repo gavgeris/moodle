@@ -300,6 +300,9 @@ $string['error:cannotact'] = 'Cannot activate the badge. ';
 $string['error:cannotawardbadge'] = 'Cannot award badge to a user.';
 $string['error:cannotrevokebadge'] = 'Cannot revoke badge from a user.';
 $string['error:cannotdeletecriterion'] = 'This criterion cannot be deleted. ';
+$string['error:cannotsendtobackpack'] = '<strong>Can\'t add badge to backpack</strong><br />
+Your backpack provider is sending this message: \'{$a}\'.<br /><br />
+You can try downloading the badge and adding it manually to your backpack, or try again later.';
 $string['error:connectionunknownreason'] = 'The connection was unsuccessful but no reason was given.';
 $string['error:clone'] = 'Cannot clone the badge.';
 $string['error:duplicatename'] = 'Badge with such name already exists in the system.';
@@ -312,7 +315,6 @@ $string['error:invalidparambadge'] = 'Badge does not exist. ';
 $string['error:noactivities'] = 'There are no activities with completion criteria enabled in this course.';
 $string['error:nobadges'] = 'There are currently no badges with access enabled to be added as criteria. A site badge can only have other site badges as criteria. A course badge can have other course badges or site badges as criteria.';
 $string['error:invalidparamcohort'] = 'Cohort does not exist. ';
-$string['error:noactivities'] = 'There are no activities with completion criteria enabled in this course.';
 $string['error:nocohorts'] = 'No cohorts';
 $string['error:nocourses'] = 'Course completion is not enabled for any of the courses in this site, so none can be displayed. Course completion may be enabled in the course settings.';
 $string['error:nogroupssummary'] = '<p>There are no public collections of badges available in your backpack. </p>';

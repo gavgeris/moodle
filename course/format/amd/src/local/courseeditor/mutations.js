@@ -422,9 +422,20 @@ export default class {
      * @param {array} cmIds the list of course modules ids
      * @param {bool} complete the new completion value
      */
-    cmCompletion(stateManager, cmIds, complete) {
-        const newValue = (complete) ? 1 : 0;
-        this._setElementsValue(stateManager, 'cm', cmIds, 'completionstate', newValue);
+    async cmCompletion(stateManager, cmIds, complete) {
+        const newState = (complete) ? 1 : 0;
+        const action = (newState == 1) ? 'cm_complete' : 'cm_uncomplete';
+        const logEntry = this._getLoggerEntry(stateManager, action, cmIds);
+        stateManager.setReadOnly(false);
+        cmIds.forEach((id) => {
+            const element = stateManager.get('cm', id);
+            if (element) {
+                element.isoverallcomplete = complete;
+                element.completionstate = newState;
+            }
+        });
+        stateManager.setReadOnly(true);
+        stateManager.addLoggerEntry(await logEntry);
     }
 
     /**

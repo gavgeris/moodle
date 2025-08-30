@@ -1070,6 +1070,17 @@ class moodle_url {
     public function get_port() {
         return $this->port;
     }
+
+    /**
+     * Returns the 'slashargument' portion of a URL. For example, if the URL is
+     * http://www.example.org.com/pluginfile.php/1/core_admin/logocompact/ then this will
+     * return '1/core_admin/logocompact/'.
+     *
+     * @return string Slash argument as string.
+     */
+    public function get_slashargument(): string {
+        return $this->slashargument;
+    }
 }
 
 /**
@@ -2401,8 +2412,7 @@ function send_headers($contenttype, $cacheable = true) {
         @header('Expires: ');
     } else {
         // Do everything we can to always prevent clients and proxies caching.
-        @header('Cache-Control: no-store, no-cache, must-revalidate');
-        @header('Cache-Control: post-check=0, pre-check=0, no-transform', false);
+        @header('Cache-Control: no-store, no-cache, must-revalidate, no-transform');
         @header('Pragma: no-cache');
         @header('Expires: Mon, 20 Aug 1969 09:23:00 GMT');
         @header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
