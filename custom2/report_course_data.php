@@ -36,6 +36,7 @@ $rs->close();
 echo '<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">';
 echo '<style>.fdg_sortable{cursor:pointer;text-decoration:underline;color:#00f}.alterRow{background-color:#dfdfdf}</style>';
 
+
 Fete_ViewControl_DataGrid::getInstance($result4)
     ->setGridAttributes(['class' => 'table table-striped table-hover'])
     ->enableSorting(true)
