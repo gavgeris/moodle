@@ -48,7 +48,7 @@ if (is_siteadmin()) {
 
 <div class="container">
     <button id="loadButton" class="btn btn-primary">
-        Δείξε μου τι έχω για διόρθωση
+        Δείξε μου τις εργασίες προς βαθμολόγηση
     </button>
 
     <div class="loader">
