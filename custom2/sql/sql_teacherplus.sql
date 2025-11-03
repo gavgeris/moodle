@@ -1,12 +1,13 @@
 SELECT
     CONCAT('<a target="_blank" href="',
-           'https://seminars.etwinning.gr/mod/assign/view.php&quest;id=',(SELECT id FROM mdl_course_modules mcm WHERE instance = ma.id AND course = mc.id AND module = 1 LIMIT 1),'&action=grading">',
-           CONCAT(CONCAT(LPAD(ROUND(DATEDIFF(FROM_UNIXTIME(allowsubmissionsfromdate), FROM_UNIXTIME(mc.startdate)) / 7) + 1,2,'0'), " - "), ma.name),
+           'https://seminars.etwinning.gr/mod/assign/view.php&quest;id=',(SELECT id FROM mdl_course_modules mcm WHERE instance = ma.id AND course = mc.id AND module = 1 LIMIT 1),'&action=grader&userid=',
+           mas.userid,
+           '">',
+           CONCAT(CONCAT(LPAD(ROUND(DATEDIFF(FROM_UNIXTIME(allowsubmissionsfromdate), FROM_UNIXTIME(mc.startdate)) / 7) + 1,2,'0'), " - "), ma.name, ' - ', mu.lastname, ' ', mu.firstname),
            '</a>'
-        ) AS assignment,
-    COUNT(distinct mas.userid) AS plithos
+        ) AS assignment
 FROM
-    mdl_assign_submission mas,
+    mdl_assign_submission mas JOIN  mdl_user mu ON (mas.userid = mu.id),
     mdl_assign ma,
     mdl_course mc
 WHERE ma.course = mc.id
@@ -25,7 +26,7 @@ WHERE ma.course = mc.id
                                AND userid = mas.userid
     ))
     )
-GROUP BY assignment
+/*
 UNION
 SELECT
     CONCAT('<a target="_blank" href="',
@@ -40,7 +41,7 @@ FROM
     mdl_forum_discussions mfd,
     mdl_forum_posts mfp
 
-WHERE mc.id = ?
+WHERE mc.id = 4357
   AND mf.course = mc.id
   AND mfd.forum = mf.id
   AND mfd.id = mfp.discussion
@@ -59,3 +60,4 @@ WHERE mc.id = ?
 )
 GROUP BY assignment;
 -- ORDER BY LPAD(ROUND(DATEDIFF(FROM_UNIXTIME(allowsubmissionsfromdate), FROM_UNIXTIME(mc.startdate)) / 7) + 1,2,'0'), plithos desc
+*/
