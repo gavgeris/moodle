@@ -14,10 +14,6 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace filter_emoticon;
-
-use core\context\system as context_system;
-
 /**
  * Skype icons filter phpunit tests
  *
@@ -25,9 +21,22 @@ use core\context\system as context_system;
  * @category   test
  * @copyright  2013 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \filter_emoticon\text_filter
  */
-final class text_filter_test extends \advanced_testcase {
+
+namespace filter_emoticon;
+
+use filter_emoticon;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot . '/filter/emoticon/filter.php'); // Include the code to test.
+
+/**
+ * Skype icons filter testcase.
+ */
+final class filter_test extends \advanced_testcase {
+
     /**
      * Test that filter ignores nolink/pre element, and processes remaining text
      *
@@ -39,7 +48,7 @@ final class text_filter_test extends \advanced_testcase {
     public function test_filter_emoticon_filtered(string $input, string $expectedprefix): void {
         $this->resetAfterTest();
 
-        $filteredtext = $this->get_testable_filter_emoticon()->filter($input, [
+        $filteredtext = (new testable_filter_emoticon())->filter($input, [
             'originalformat' => FORMAT_HTML,
         ]);
 
@@ -52,7 +61,7 @@ final class text_filter_test extends \advanced_testcase {
      *
      * @return string[]
      */
-    public static function filter_emoticon_filtered_provider(): array {
+    public function filter_emoticon_filtered_provider(): array {
         return [
             'FORMAT_HTML is filtered' => [
                 'input' => 'Hello(n)',
@@ -77,7 +86,7 @@ final class text_filter_test extends \advanced_testcase {
     public function test_filter_emoticon($input, $format, $expected): void {
         $this->resetAfterTest();
 
-        $filter = $this->get_testable_filter_emoticon();
+        $filter = new testable_filter_emoticon();
         $this->assertEquals($expected, $filter->filter($input, [
                 'originalformat' => $format,
             ]));
@@ -155,12 +164,13 @@ final class text_filter_test extends \advanced_testcase {
 
     /**
      * Tests the filter doesn't break anything if activated but invalid format passed.
+     *
      */
     public function test_filter_invalidformat(): void {
         global $PAGE;
         $this->resetAfterTest();
 
-        $filter = $this->get_testable_filter_emoticon();
+        $filter = new testable_filter_emoticon();
         $input = '(grr)';
         $expected = '(grr)';
 
@@ -171,6 +181,7 @@ final class text_filter_test extends \advanced_testcase {
 
     /**
      * Tests the filter doesn't break anything if activated but no emoticons available.
+     *
      */
     public function test_filter_emptyemoticons(): void {
         global $CFG;
@@ -178,7 +189,7 @@ final class text_filter_test extends \advanced_testcase {
         // Empty the emoticons array.
         $CFG->emoticons = null;
 
-        $filter = new text_filter(context_system::instance(), ['originalformat' => FORMAT_HTML]);
+        $filter = new filter_emoticon(\context_system::instance(), array('originalformat' => FORMAT_HTML));
 
         $input = '(grr)';
         $expected = '(grr)';
@@ -187,25 +198,19 @@ final class text_filter_test extends \advanced_testcase {
             'originalformat' => FORMAT_HTML,
         ]));
     }
+}
 
-    /**
-     * Get a copy of the filter configured for testing.
-     *
-     * @param array ...$args
-     * @return \filter_emoticon\text_filter
-     */
-    protected function get_testable_filter_emoticon(...$args): text_filter {
-        return new class extends text_filter {
-            // phpcs:ignore moodle.Commenting.MissingDocblock.MissingTestcaseMethodDescription
-            public function __construct(...$args) {
-                // Reset static emoticon caches.
-                parent::$emoticontexts = [];
-                parent::$emoticonimgs = [];
-                // Use this context for filtering.
-                $this->context = context_system::instance();
-                // Define FORMAT_HTML as only one filtering in DB.
-                set_config('formats', implode(',', [FORMAT_HTML]), 'filter_emoticon');
-            }
-        };
+/**
+ * Subclass for easier testing.
+ */
+class testable_filter_emoticon extends filter_emoticon {
+    public function __construct() {
+        // Reset static emoticon caches.
+        parent::$emoticontexts = array();
+        parent::$emoticonimgs = array();
+        // Use this context for filtering.
+        $this->context = \context_system::instance();
+        // Define FORMAT_HTML as only one filtering in DB.
+        set_config('formats', implode(',', array(FORMAT_HTML)), 'filter_emoticon');
     }
 }

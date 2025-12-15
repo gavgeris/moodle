@@ -201,10 +201,10 @@ if (!empty($issuedbadge->recipient->id)) {
     }
 
     redirect(
-        url: new \core\url('/badges/mybadges.php'),
+        url: new moodle_url('/badges/mybadges.php'),
         message: $message,
         messagetype: $messagetype,
     );
 } else {
-    redirect(new \core\url('/badges/mybadges.php'));
+    redirect(new moodle_url('/badges/mybadges.php'));
 }

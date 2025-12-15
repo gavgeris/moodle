@@ -25,17 +25,17 @@ require_once(__DIR__.'/../extlib/OTPHP/ParameterTrait.php');
 require_once(__DIR__.'/../extlib/OTPHP/OTP.php');
 require_once(__DIR__.'/../extlib/OTPHP/TOTP.php');
 
+require_once(__DIR__.'/../extlib/Assert/Assertion.php');
+require_once(__DIR__.'/../extlib/Assert/AssertionFailedException.php');
+require_once(__DIR__.'/../extlib/Assert/InvalidArgumentException.php');
 require_once(__DIR__.'/../extlib/ParagonIE/ConstantTime/EncoderInterface.php');
 require_once(__DIR__.'/../extlib/ParagonIE/ConstantTime/Binary.php');
 require_once(__DIR__.'/../extlib/ParagonIE/ConstantTime/Base32.php');
 
-use MoodleQuickForm;
 use tool_mfa\local\factor\object_factor_base;
 use OTPHP\TOTP;
 use stdClass;
-use core\clock;
 use core\context\system;
-use core\di;
 
 /**
  * TOTP factor class.
@@ -66,19 +66,6 @@ class factor extends object_factor_base {
     /** @var string Factor icon */
     protected $icon = 'fa-mobile-screen';
 
-    /** @var clock */
-    private readonly clock $clock;
-
-    /**
-     * Constructor.
-     *
-     * @param string $name
-     */
-    public function __construct(string $name) {
-        parent::__construct($name);
-        $this->clock = di::get(clock::class);
-    }
-
 
     /**
      * Generates TOTP URI for given secret key.
@@ -93,7 +80,7 @@ class factor extends object_factor_base {
         $host = parse_url($CFG->wwwroot, PHP_URL_HOST);
         $sitename = str_replace(':', '', format_string($SITE->fullname, true, ['context' => system::instance()]));
         $issuer = $sitename.' '.$host;
-        $totp = TOTP::create($secret, clock: $this->clock);
+        $totp = TOTP::create($secret);
         $totp->setLabel($USER->username);
         $totp->setIssuer($issuer);
         return $totp->getProvisioningUri();
@@ -133,10 +120,10 @@ class factor extends object_factor_base {
     /**
      * TOTP Factor implementation.
      *
-     * @param MoodleQuickForm $mform
-     * @return MoodleQuickForm $mform
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm $mform
      */
-    public function setup_factor_form_definition(MoodleQuickForm $mform): MoodleQuickForm {
+    public function setup_factor_form_definition(\MoodleQuickForm $mform): \MoodleQuickForm {
         $secret = $this->generate_secret_code();
         $mform->addElement('hidden', 'secret', $secret);
         $mform->setType('secret', PARAM_ALPHANUM);
@@ -147,10 +134,10 @@ class factor extends object_factor_base {
     /**
      * TOTP Factor implementation.
      *
-     * @param MoodleQuickForm $mform
-     * @return MoodleQuickForm $mform
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm $mform
      */
-    public function setup_factor_form_definition_after_data(MoodleQuickForm $mform): MoodleQuickForm {
+    public function setup_factor_form_definition_after_data(\MoodleQuickForm $mform): \MoodleQuickForm {
         global $OUTPUT, $SITE, $USER;
 
         // Array of elements to allow XSS.
@@ -250,8 +237,8 @@ class factor extends object_factor_base {
     public function setup_factor_form_validation(array $data): array {
         $errors = [];
 
-        $totp = TOTP::create($data['secret'], clock: $this->clock);
-        if (!$totp->verify($data['verificationcode'], $this->clock->time(), 1)) {
+        $totp = TOTP::create($data['secret']);
+        if (!$totp->verify($data['verificationcode'], time(), 1)) {
             $errors['verificationcode'] = get_string('error:wrongverification', 'factor_totp');
         }
 
@@ -261,10 +248,10 @@ class factor extends object_factor_base {
     /**
      * TOTP Factor implementation.
      *
-     * @param MoodleQuickForm $mform
-     * @return MoodleQuickForm $mform
+     * @param \MoodleQuickForm $mform
+     * @return \MoodleQuickForm $mform
      */
-    public function login_form_definition(MoodleQuickForm $mform): MoodleQuickForm {
+    public function login_form_definition(\MoodleQuickForm $mform): \MoodleQuickForm {
 
         $mform->disable_form_change_checker();
         $mform->addElement(new \tool_mfa\local\form\verification_field());
@@ -283,12 +270,14 @@ class factor extends object_factor_base {
         global $USER;
         $factors = $this->get_active_user_factors($USER);
         $result = ['verificationcode' => get_string('error:wrongverification', 'factor_totp')];
-        $window = get_config('factor_totp', 'window');
+        $windowconfig = get_config('factor_totp', 'window');
 
         foreach ($factors as $factor) {
-            $totp = TOTP::create($factor->secret, clock: $this->clock);
+            $totp = TOTP::create($factor->secret);
+            // Convert seconds to windows.
+            $window = (int) floor($windowconfig / $totp->getPeriod());
             $factorresult = $this->validate_code($data['verificationcode'], $window, $totp, $factor);
-            $time = userdate($this->clock->time(), get_string('systimeformat', 'factor_totp'));
+            $time = userdate(time(), get_string('systimeformat', 'factor_totp'));
 
             switch ($factorresult) {
                 case self::TOTP_USED:
@@ -328,27 +317,23 @@ class factor extends object_factor_base {
             return self::TOTP_USED;
         }
 
-        // Check if the code is valid, returning early.
-        if ($totp->verify($code, $this->clock->time(), $window)) {
+        // The window in which to check for clock skew, 5 increments past valid window.
+        $skewwindow = $window + 5;
+        $pasttimestamp = time() - ($skewwindow * $totp->getPeriod());
+        $futuretimestamp = time() + ($skewwindow * $totp->getPeriod());
+
+        if ($totp->verify($code, time(), $window)) {
             return self::TOTP_VALID;
+        } else if ($totp->verify($code, $pasttimestamp, $skewwindow)) {
+            // Check for clock skew in the past 10 periods.
+            return self::TOTP_OLD;
+        } else if ($totp->verify($code, $futuretimestamp, $skewwindow)) {
+            // Check for clock skew in the future 10 periods.
+            return self::TOTP_FUTURE;
+        } else {
+            // In all other cases, code is invalid.
+            return self::TOTP_INVALID;
         }
-
-        // Check for clock skew in the past and future 10 periods.
-        for ($i = 1; $i <= 10; $i++) {
-            $pasttimestamp = $this->clock->time() - $i * $totp->getPeriod();
-            $futuretimestamp = $this->clock->time() + $i * $totp->getPeriod();
-
-            if ($totp->verify($code, $pasttimestamp, $window)) {
-                return self::TOTP_OLD;
-            }
-
-            if ($totp->verify($code, $futuretimestamp, $window)) {
-                return self::TOTP_FUTURE;
-            }
-        }
-
-        // In all other cases, the code is invalid.
-        return self::TOTP_INVALID;
     }
 
     /**
@@ -357,7 +342,7 @@ class factor extends object_factor_base {
      * @return string
      */
     public function generate_secret_code(): string {
-        $totp = TOTP::create(clock: $this->clock);
+        $totp = TOTP::create();
         return substr($totp->getSecret(), 0, 16);
     }
 
@@ -376,9 +361,9 @@ class factor extends object_factor_base {
             $row->factor = $this->name;
             $row->secret = $data->secret;
             $row->label = $data->devicename;
-            $row->timecreated = $this->clock->time();
+            $row->timecreated = time();
             $row->createdfromip = $USER->lastip;
-            $row->timemodified = $this->clock->time();
+            $row->timemodified = time();
             $row->lastverified = 0;
             $row->revoked = 0;
 

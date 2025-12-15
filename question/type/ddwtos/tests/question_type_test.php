@@ -40,13 +40,11 @@ final class question_type_test extends \question_testcase {
     protected $qtype;
 
     protected function setUp(): void {
-        parent::setUp();
         $this->qtype = question_bank::get_qtype('ddwtos');;
     }
 
     protected function tearDown(): void {
         $this->qtype = null;
-        parent::tearDown();
     }
 
     /**

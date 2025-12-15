@@ -99,10 +99,12 @@ $PAGE->activityheader->set_attrs([
     'hidecompletion' => true,
     'description' => ''
 ]);
-
+$PAGE->add_body_class('limitedwidth');
 echo $OUTPUT->header();
 echo $renderer->main_action_bar($actionbar);
 echo $OUTPUT->heading(get_string('show_entries', 'mod_feedback'), 3);
+
+$current_tab = 'showentries';
 
 /// Print the main part of the page
 ///////////////////////////////////////////////////////////////////////////

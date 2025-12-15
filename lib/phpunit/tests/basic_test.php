@@ -382,7 +382,7 @@ STRING;
      * Test that the navigation node URL is overridden correctly.
      */
     public function test_set_navigation_url(): void {
-        \navigation_node::override_active_url(new \core\url('/foo/bar/baz'));
+        \navigation_node::override_active_url(new \moodle_url('/foo/bar/baz'));
         $this->assertNotNull(
             (new \ReflectionClass(\navigation_node::class))->getStaticPropertyValue('fullmeurl', null),
         );

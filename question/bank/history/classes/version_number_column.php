@@ -49,4 +49,9 @@ class version_number_column extends column_base {
         return 'qv.version';
     }
 
+    #[\Override]
+    public function is_sortable() {
+        return 'qv.version';
+    }
+
 }

@@ -35,7 +35,6 @@ final class manager_test extends \advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->libdir.'/adminlib.php');
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -424,7 +423,7 @@ final class manager_test extends \advanced_testcase {
      * @param string|null $expectedpresetname Expected preset name.
      */
     public function test_import_preset(string $filecontents, bool $expectedpreset, bool $expectedsettings = false,
-            bool $expectedplugins = false, bool $expecteddebugging = false, ?string $expectedexception = null,
+            bool $expectedplugins = false, bool $expecteddebugging = false, string $expectedexception = null,
             string $expectedpresetname = 'Imported preset'): void {
         global $DB;
 
@@ -602,6 +601,7 @@ final class manager_test extends \advanced_testcase {
             ],
         ];
     }
+
 
     /**
      * Test the behaviour of delete_preset() method when the preset id doesn't exist.

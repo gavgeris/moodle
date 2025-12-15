@@ -34,7 +34,6 @@ final class gradebookservices_test extends \advanced_testcase {
     public static function setUpBeforeClass(): void {
         global $CFG;
         require_once($CFG->dirroot . '/mod/lti/locallib.php');
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -379,7 +378,7 @@ final class gradebookservices_test extends \advanced_testcase {
      *
      */
     private function create_standalone_lineitem(int $courseid, int $typeid, ?string $resourceid,
-            ?string $tag, ?int $ltiinstanceid = null): void {
+            ?string $tag, int $ltiinstanceid = null): void {
         $gbservice = new gradebookservices();
         $gbservice->add_standalone_lineitem($courseid,
             "manualtest",

@@ -76,10 +76,10 @@ class manager {
         ];
         $table->attributes['class'] = 'admintable generaltable table table-bordered';
         $table->colclasses = [
-            'text-end',
+            'text-right',
             '',
             '',
-            'text-end',
+            'text-right',
             'text-center',
         ];
         $factors = factor::get_enabled_factors();
@@ -441,21 +441,6 @@ class manager {
             $url = new \moodle_url($url);
         }
 
-        // Admin not setup.
-        if (!empty($CFG->adminsetuppending)) {
-            return self::NO_REDIRECT;
-        }
-
-        // Honor prevent_redirect.
-        if ($preventredirect) {
-            return self::NO_REDIRECT;
-        }
-
-        // Login as.
-        if (\core\session\manager::is_loggedinas()) {
-            return self::NO_REDIRECT;
-        }
-
         // Check for pluginfile.php urls.
         $pluginfileurl = new \moodle_url('/pluginfile.php');
         if ($url->compare($pluginfileurl)) {
@@ -500,6 +485,22 @@ class manager {
             }
         }
 
+        // Admin not setup.
+        if (!empty($CFG->adminsetuppending)) {
+            return self::NO_REDIRECT;
+        }
+
+        // Initial installation.
+        // We get this for free from get_plugins_with_function.
+
+        // Upgrade check.
+        // We get this for free from get_plugins_with_function.
+
+        // Honor prevent_redirect.
+        if ($preventredirect) {
+            return self::NO_REDIRECT;
+        }
+
         // User not properly setup.
         if (user_not_fully_set_up($USER)) {
             return self::NO_REDIRECT;
@@ -515,6 +516,11 @@ class manager {
             return self::NO_REDIRECT;
         }
 
+        // Login as.
+        if (\core\session\manager::is_loggedinas()) {
+            return self::NO_REDIRECT;
+        }
+
         // Site policy.
         if (isset($USER->policyagreed) && !$USER->policyagreed) {
             $manager = new \core_privacy\local\sitepolicy\manager();
@@ -524,16 +530,12 @@ class manager {
             }
         }
 
-        // Site policies from tool_policy.
-        $policyviewurl = new \moodle_url('/admin/tool/policy/view.php');
-        $policyindexurl = new \moodle_url('/admin/tool/policy/index.php');
-        if ($policyviewurl->compare($url, URL_MATCH_BASE) || $policyindexurl->compare($url, URL_MATCH_BASE)) {
-            return self::NO_REDIRECT;
-        }
-
         // WS/AJAX check.
-        // Prevents any potential bypassing of multi-factor authentication.
         if (WS_SERVER || AJAX_SCRIPT) {
+            if (isset($SESSION->mfa_pending) && !empty($SESSION->mfa_pending)) {
+                // Allow AJAX and WS, but never from auth.php.
+                return self::NO_REDIRECT;
+            }
             return self::REDIRECT_EXCEPTION;
         }
 

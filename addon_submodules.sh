@@ -18,6 +18,8 @@ git submodule add https://github.com/remotelearner/moodle-block_grade_me blocks/
 git submodule add https://github.com/Syxton/moodle-block_massaction blocks/massaction
 git submodule add https://github.com/donhinkelman/moodle-block_sharing_cart blocks/sharing_cart
 git submodule add https://github.com/FMCorz/moodle-block_xp blocks/xp
+git submodule add https://github.com/jleyva/moodle-block_configurablereports/ blocks/configurable_reports
+
 
 #filters
 git submodule add https://github.com/michael-milette/moodle-filter_filtercodes filter/filtercodes
@@ -38,7 +40,7 @@ git submodule add https://github.com/rogersegu/moodle-atto_c4l/ lib/editor/atto/
 git submodule add https://github.com/ecampbell/moodle-atto_wordimport lib/editor/atto/plugins/wordimport
 
 #tinymce plugins
-git submodule add https://github.com/reskit/moodle-tiny_c4l lib/editor/tiny/plugins/tiny_c4l
+git submodule add https://github.com/reskit/moodle-tiny_c4l lib/editor/tiny/plugins/c4l
 
 
 #tools
@@ -58,7 +60,7 @@ git submodule add https://github.com/gjb2048/moodle-format_topcoll.git course/fo
 git submodule add https://github.com/marinaglancy/moodle-format_flexsections course/format/flexsections
 
 #themes
-git submodule add https://gitlab.com/jezhops/moodle-theme_adaptable.git theme/adaptable
+#git submodule add https://gitlab.com/jezhops/moodle-theme_adaptable.git theme/adaptable
 git submodule add https://github.com/dbnschools/moodle-theme_fordson theme/fordson
 git submodule add https://github.com/willianmano/moodle-theme_moove theme/moove
 git submodule add https://github.com/gavgeris/moodle-theme_etwinning theme/etwinning

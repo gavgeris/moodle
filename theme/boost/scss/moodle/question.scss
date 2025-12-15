@@ -257,28 +257,20 @@ body.path-question-type {
 }
 
 .que {
+    clear: left;
     text-align: left;
     margin: 0 auto 1.8em auto;
-    display: flex;
-    align-items: start;
-    gap: 1rem;
-    @include media-breakpoint-down(md) {
-        flex-direction: column;
-    }
 }
 
 .que .info {
-    flex-shrink: 0;
+    float: left;
     width: 7em;
     padding: 0.5em;
+    margin-bottom: 1.8em;
     background-color: $gray-100;
     border: 1px solid darken($gray-300, 7%);
 
     @include border-radius(2px);
-
-    @include media-breakpoint-down(md) {
-        width: 100%;
-    }
 }
 
 .que h3.no {
@@ -309,11 +301,7 @@ body.path-question-type {
 }
 
 .que .content {
-    flex-grow: 1;
-
-    @include media-breakpoint-down(md) {
-        width: 100%;
-    }
+    margin: 0 0 0 8.5em;
 }
 
 .que .formulation,
@@ -327,7 +315,7 @@ body.path-question-type {
 }
 .que .outcome,
 .que .comment {
-    @include alert-variant(shift-color($warning, $alert-bg-scale), shift-color($warning, $alert-border-scale), shift-color($warning, $alert-color-scale - 9%)); /* stylelint-disable-line max-line-length */
+    @include alert-variant(theme-color-level('warning', $alert-bg-level), theme-color-level('warning', $alert-border-level), theme-color-level('warning', $alert-color-level - 0.9)); /* stylelint-disable-line max-line-length */
     // Darken link colour inside comments for better colour contrast against regular text.
     a {
         color: darken($link-color, 30%);
@@ -335,7 +323,7 @@ body.path-question-type {
 }
 
 .que .formulation {
-    @include alert-variant(shift-color($info, $alert-bg-scale), shift-color($info, $alert-border-scale), shift-color($info, $alert-color-scale + 40%)); /* stylelint-disable-line max-line-length */
+    @include alert-variant(theme-color-level('info', $alert-bg-level - 1.30), theme-color-level('info', $alert-border-level), theme-color-level('info', $alert-color-level + 4)); /* stylelint-disable-line max-line-length */
 }
 
 .que.multichoice .answer div.r0 .icon.fa-check,
@@ -366,7 +354,7 @@ body.path-question-type {
 }
 
 .que .comment {
-    @include alert-variant(shift-color($success, $alert-bg-scale), shift-color($success, $alert-border-scale), shift-color($success, $alert-color-scale)); /* stylelint-disable-line max-line-length */
+    @include alert-variant(theme-color-level('success', $alert-bg-level), theme-color-level('success', $alert-border-level), theme-color-level('success', $alert-color-level)); /* stylelint-disable-line max-line-length */
 }
 
 .que .ablock {
@@ -674,17 +662,12 @@ body.path-question-type .mform fieldset.hidden {
     position: relative;
 }
 
-.qbank_managecategories-item.qbank_managecategories-droptarget-before,
-.qbank_managecategories-item .qbank_managecategories-item.qbank_managecategories-droptarget-before,
-.qbank_managecategories-categorylist.qbank_managecategories-droptarget-before > .qbank_managecategories-item:first-child {
-    border-top-color: $link-color;
-}
-.qbank_managecategories-item.qbank_managecategories-droptarget,
-.qbank_managecategories-categorylist.qbank_managecategories-droptarget > .qbank_managecategories-item:last-child {
-    border-bottom-color: $link-color;
-}
-
-.qbank_managecategories-newchild.qbank_managecategories-droptarget {
-    border-color: $link-color;
-    color: $link-color;
+@include media-breakpoint-down(sm) {
+    .que .info {
+        float: none;
+        width: auto;
+    }
+    .que .content {
+        margin: 0;
+    }
 }

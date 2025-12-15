@@ -29,7 +29,6 @@ use advanced_testcase;
 final class encryption_test extends advanced_testcase {
 
     protected function setUp(): void {
-        parent::setUp();
         require_once(__DIR__ . '/fixtures/testable_encryption.php');
     }
 

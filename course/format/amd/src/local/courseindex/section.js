@@ -37,11 +37,9 @@ export default class Component extends DndSection {
         this.name = 'courseindex_section';
         // Default query selectors.
         this.selectors = {
-            SECTION: `[data-for='section']`,
             SECTION_ITEM: `[data-for='section_item']`,
             SECTION_TITLE: `[data-for='section_title']`,
             CM_LAST: `[data-for="cm"]:last-child`,
-            DND_ALLOWED: `[data-courseindexdndallowed='true']`,
         };
         // Default classes to toggle on refresh.
         this.classes = {
@@ -81,7 +79,7 @@ export default class Component extends DndSection {
         this.configState(state);
         const sectionItem = this.getElement(this.selectors.SECTION_ITEM);
         // Drag and drop is only available for components compatible course formats.
-        if (this.reactive.isEditing && this.reactive.supportComponents && document.querySelector(this.selectors.DND_ALLOWED)) {
+        if (this.reactive.isEditing && this.reactive.supportComponents) {
             // Init the inner dragable element passing the full section as affected region.
             const titleitem = new SectionTitle({
                 ...this,
@@ -150,18 +148,17 @@ export default class Component extends DndSection {
         if (!element.pageItem) {
             return;
         }
+        const section = state.section.get(this.id);
+        const isRelevantPageItem = element.pageItem.sectionId === this.id || !this.isPageItem;
+        const isSectionOrCollapsed = element.pageItem.type === 'section' || section.indexcollapsed;
 
-        const containsPageItem = this._isPageItemInThisSection(element.pageItem);
-
-        if (!containsPageItem || this._isParentSectionIndexCollapsed(state)) {
+        if (!(isRelevantPageItem && isSectionOrCollapsed)) {
             this.pageItem = false;
             this.getElement(this.selectors.SECTION_ITEM).classList.remove(this.classes.PAGEITEM);
             return;
         }
-
-        const section = state.section.get(this.id);
         if (section.indexcollapsed && !element.pageItem?.isStatic) {
-            this.pageItem = containsPageItem;
+            this.pageItem = (element.pageItem?.sectionId == this.id);
         } else {
             this.pageItem = (element.pageItem.type == 'section' && element.pageItem.id == this.id);
         }
@@ -170,42 +167,6 @@ export default class Component extends DndSection {
         if (this.pageItem && !this.reactive.isEditing) {
             this.element.scrollIntoView({block: "nearest"});
         }
-    }
-
-    /**
-     * Check if the page item is inside this section.
-     *
-     * @private
-     * @param {Object} pageItem
-     * @param {Object} pageItem.sectionId the current page item section id.
-     * @returns {boolean}
-     */
-    _isPageItemInThisSection(pageItem) {
-        if (pageItem.sectionId == this.id) {
-            return true;
-        }
-        // Check for any possible subsections.
-        const subsection = this.element.querySelector(`${this.selectors.SECTION}[data-id="${pageItem.sectionId}"]`);
-        if (subsection) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Check if the parent section index is collapsed.
-     *
-     * @private
-     * @param {Object} state the current state
-     * @returns {boolean|null} null if no parent section is found.
-     */
-    _isParentSectionIndexCollapsed(state) {
-        const parentElement = this.element.parentElement.closest(this.selectors.SECTION);
-        if (!parentElement || !parentElement.dataset.id) {
-            return null;
-        }
-        const parentSection = state.section.get(parentElement.dataset.id);
-        return !!parentSection.indexcollapsed;
     }
 
     /**

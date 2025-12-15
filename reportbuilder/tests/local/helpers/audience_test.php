@@ -35,6 +35,7 @@ use invalid_parameter_exception;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 final class audience_test extends advanced_testcase {
+
      /**
       * Test reports list is empty for a normal user without any audience records configured
       */

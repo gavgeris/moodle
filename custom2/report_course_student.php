@@ -25,40 +25,53 @@ if ($query['id'] != "") {
 } else {
 	//$courseid = $_REQUEST["courseid"];
 }
-
-
-$sqlstmt5 = file_get_contents('sql/sql_student.sql');
-$result5= array();
-
-// Fetch SQLStatement 4
-$rs = $DB->get_recordset_sql($sqlstmt5, array($courseid, $USER->id));
-foreach ($rs as $record) {
-	array_push($result5, json_decode(json_encode($record), True));
-}
-$rs->close();
-
 ?>
+
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="utf-8">
+<title>Εργασίες προς επανυποβολή</title>
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 <style>
-.fdg_sortable {cursor:pointer;text-decoration:underline;color:#00f}
-.alterRow {background-color:#dfdfdf}
+#results { margin-top: 20px; }
+.loader { display: none; text-align: center; margin-top: 20px; }
 </style>
-<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+</head>
+<body>
 
-<?php
-if (count($result5) > 0) {
-	echo('<div class="alert alert-warning" style="text-align: justify;">
-  <p>Οι ακόλουθες εργασίες έχουν λάβει ανατροφοδότηση απο τον επιμορφωτή σας. Θα πρέπει να τις διορθώσετε και να τις ξαναυποβάλλετε προκειμένου να βαθμολογηθείτε.</p>
-</div>');
+<div class="container">
+    <button id="loadButton" class="btn btn-warning">
+        Δείξε τις εργασίες μου προς διόρθωση
+    </button>
 
-	Fete_ViewControl_DataGrid::getInstance($result5)
-	->setGridAttributes(array('class' => 'table table-striped table-hover'))
-	->enableSorting(true)
-	->setup(array(
-	    'assignment' => array('header' => 'Εβδομάδα - Εργασία'),
-	    'plithos' => array('header' => 'Πλήθος'),
-	))
-	->setStartingCounter(1)
-	->setRowClass('row')
-	->render();
-}
-?>
+    <div class="loader">
+        <img src="https://i.gifer.com/ZZ5H.gif" width="50" alt="Loading..."><br>
+        Φόρτωση...
+    </div>
+
+    <div id="results"></div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+$('#loadButton').on('click', function() {
+    $('.loader').show();
+    $('#results').html('');
+    $.ajax({
+        url: 'report_student_data.php',
+        type: 'GET',
+        data: { courseid: <?php echo $courseid; ?> },
+        success: function(data) {
+            $('.loader').hide();
+            $('#results').html(data);
+        },
+        error: function() {
+            $('.loader').hide();
+            alert('Σφάλμα κατά τη φόρτωση των δεδομένων.');
+        }
+    });
+});
+</script>
+</body>
+</html>

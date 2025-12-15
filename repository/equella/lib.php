@@ -258,7 +258,7 @@ class repository_equella extends repository {
      * @param bool $forcedownload If true (default false), forces download of file rather than view in browser/plugin
      * @param array $options additional options affecting the file serving
      */
-    public function send_file($stored_file, $lifetime=null , $filter=0, $forcedownload=false, ?array $options = null) {
+    public function send_file($stored_file, $lifetime=null , $filter=0, $forcedownload=false, array $options = null) {
         $ref = $this->unserialize_reference($stored_file->get_reference());
         if (isset($ref->url) && $url = $this->appendtoken($ref->url)) {
             header('Location: ' . $url);

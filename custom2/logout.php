@@ -9,7 +9,7 @@ session_unset();
 session_destroy();
 
 
-$cas_url = "https://sso-01.sch.gr/logout";
+$cas_url = "https://sso.sch.gr/logout";
 $cas_url = $cas_url . "?" . "service="
         . urlencode("https://seminars.etwinning.gr/login");
 

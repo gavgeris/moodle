@@ -40,17 +40,5 @@ function xmldb_qtype_multianswer_upgrade($oldversion) {
     // Automatically generated Moodle v4.4.0 release upgrade line.
     // Put any upgrade step following this.
 
-    // Automatically generated Moodle v4.5.0 release upgrade line.
-    // Put any upgrade step following this.
-
-    if ($oldversion < 2024100701) {
-        $task = new \qtype_multianswer\task\cleanup_duplicate_subquestions();
-        if (count($task->find_duplicated_subquestions()) > 0) {
-            mtrace('Duplicated subquestions found. Queueing cleanup task.');
-            \core\task\manager::queue_adhoc_task($task);
-        }
-        upgrade_plugin_savepoint(true, 2024100701, 'qtype', 'multianswer');
-    }
-
     return true;
 }

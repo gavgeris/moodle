@@ -60,4 +60,11 @@ class format_theunittestdelete extends format_theunittest {
     public function can_delete_section($section) {
         return $this->get_format_options()['can_delete_sections'] ?? false;
     }
+
+    /**
+     * Returns true if this course format uses sections
+     */
+    public function uses_sections() {
+        return true;
+    }
 }

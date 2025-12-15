@@ -16,6 +16,13 @@
 
 namespace filter_mathjaxloader;
 
+use filter_mathjaxloader;
+
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->dirroot.'/filter/mathjaxloader/filter.php');
+
 /**
  * Unit tests for the MathJax loader filter.
  *
@@ -23,18 +30,20 @@ namespace filter_mathjaxloader;
  * @category  test
  * @copyright 2017 David Mudrak <david@moodle.com>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers \filter_mathjaxloader\text_filter
  */
-final class text_filter_test extends \advanced_testcase {
+final class filter_test extends \advanced_testcase {
+
     /**
-     * Test the functionality of {@see text_filter::map_language_code()}.
+     * Test the functionality of {@link filter_mathjaxloader::map_language_code()}.
      *
      * @param string $moodlelangcode the user's current language
      * @param string $mathjaxlangcode the mathjax language to be used for the moodle language
+     *
      * @dataProvider map_language_code_expected_mappings
      */
     public function test_map_language_code($moodlelangcode, $mathjaxlangcode): void {
-        $filter = new text_filter(\context_system::instance(), []);
+
+        $filter = new filter_mathjaxloader(\context_system::instance(), []);
         $this->assertEquals($mathjaxlangcode, $filter->map_language_code($moodlelangcode));
     }
 
@@ -44,6 +53,7 @@ final class text_filter_test extends \advanced_testcase {
      * @return array of [moodlelangcode, mathjaxcode] tuples
      */
     public static function map_language_code_expected_mappings(): array {
+
         return [
             ['cz', 'cs'], // Explicit mapping.
             ['cs', 'cs'], // Implicit mapping (exact match).

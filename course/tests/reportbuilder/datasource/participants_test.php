@@ -23,7 +23,7 @@ use completion_criteria_self;
 use core_reportbuilder_generator;
 use core_reportbuilder\local\filters\{boolean_select, date, duration, select, text};
 use core_reportbuilder\tests\core_reportbuilder_testcase;
-use core\user;
+use core_user;
 use grade_item;
 
 /**
@@ -44,7 +44,6 @@ final class participants_test extends core_reportbuilder_testcase {
 
         require_once("{$CFG->libdir}/gradelib.php");
         require_once("{$CFG->dirroot}/completion/criteria/completion_criteria_self.php");
-        parent::setUpBeforeClass();
     }
 
     /**
@@ -79,8 +78,8 @@ final class participants_test extends core_reportbuilder_testcase {
         $courseoneurl = course_get_url($courseone);
         $coursetwourl = course_get_url($coursetwo);
 
-        $useroneurl = user::get_profile_url($userone);
-        $usertwourl = user::get_profile_url($usertwo);
+        $useroneurl = core_user::get_profile_url($userone);
+        $usertwourl = core_user::get_profile_url($usertwo);
 
         $this->assertEquals([
             ["<a href=\"{$coursetwourl}\">{$coursetwo->fullname}</a>",
@@ -133,10 +132,6 @@ final class participants_test extends core_reportbuilder_testcase {
         $courseitem = grade_item::fetch_course_item($course->id);
         $courseitem->update_final_grade($user1->id, 42.5);
 
-        // Add some cohort data.
-        $cohort = $this->getDataGenerator()->create_cohort(['name' => 'My cohort']);
-        cohort_add_member($cohort->id, $user1->id);
-
         // Set some last access value for the user in the course.
         $DB->insert_record('user_lastaccess',
             ['userid' => $user1->id, 'courseid' => $course->id, 'timeaccess' => $timelastaccess]);
@@ -167,7 +162,6 @@ final class participants_test extends core_reportbuilder_testcase {
 
         $generator->create_column(['reportid' => $report->get('id'),
             'uniqueidentifier' => 'group:name']);
-        $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'cohort:name']);
         $generator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'completion:criteria']);
         $generator->create_column(['reportid' => $report->get('id'),
             'uniqueidentifier' => 'completion:completed']);
@@ -190,12 +184,15 @@ final class participants_test extends core_reportbuilder_testcase {
         $generator->create_column(['reportid' => $report->get('id'),
             'uniqueidentifier' => 'completion:grade']);
 
-        // It should get 3 records (manual enrolment, self and guest).
+        // Add filter to the report.
+        $generator->create_filter(['reportid' => $report->get('id'), 'uniqueidentifier' => 'enrol:plugin']);
+
         $content = $this->get_custom_report_content($report->get('id'));
+
+        // It should get 3 records (manual enrolment, self and guest).
         $this->assertCount(3, $content);
 
         // Filter by Manual enrolment method.
-        $generator->create_filter(['reportid' => $report->get('id'), 'uniqueidentifier' => 'enrol:plugin']);
         $content = $this->get_custom_report_content($report->get('id'), 30, [
             'enrol:plugin_operator' => select::EQUAL_TO,
             'enrol:plugin_value' => 'manual',
@@ -217,7 +214,6 @@ final class participants_test extends core_reportbuilder_testcase {
             'student', // Role shortname.
             'Students generally have fewer privileges within a course.', // Role description.
             $group->name, // Group name.
-            $cohort->name, // Cohort name.
             "All criteria below are required<ul>\n<li>Self completion: Self completion</li>\n</ul>", // Completion criteria.
             'Yes', // Course completed.
             userdate($timelastaccess), // Time last access.
@@ -226,8 +222,8 @@ final class participants_test extends core_reportbuilder_testcase {
             '', // Time started.
             userdate($timecompleted), // Time completed.
             '', // Reagreggate.
-            '2 days', // Days taking course.
-            '2 days', // Days until completion.
+            2, // Days taking course.
+            2, // Days until completion.
             '42.50', // Grade.
         ], array_values($content[0]));
     }
@@ -301,7 +297,7 @@ final class participants_test extends core_reportbuilder_testcase {
 
         $content = $this->get_custom_report_content($report->get('id'));
         $this->assertEquals([
-            [$courseone->fullname, '2 days 12 hours'],
+            [$courseone->fullname, '2.5'],
             [$coursetwo->fullname, ''],
         ], array_map('array_values', $content));
     }
@@ -311,7 +307,7 @@ final class participants_test extends core_reportbuilder_testcase {
      *
      * @return array
      */
-    public static function datasource_filters_provider(): array {
+    public function datasource_filters_provider(): array {
         global $DB;
 
         return [
@@ -401,22 +397,6 @@ final class participants_test extends core_reportbuilder_testcase {
                 ['Luna'],
             ],
             [
-                'group:name',
-                [
-                    'group:name_operator' => text::IS_EQUAL_TO,
-                    'group:name_value' => 'My group',
-                ],
-                ['Lionel'],
-            ],
-            [
-                'cohort:name',
-                [
-                    'cohort:name_operator' => text::IS_EQUAL_TO,
-                    'cohort:name_value' => 'My cohort',
-                ],
-                ['Kira'],
-            ],
-            [
                 'completion:completed',
                 [
                     'completion:completed_operator' => boolean_select::CHECKED,
@@ -491,14 +471,6 @@ final class participants_test extends core_reportbuilder_testcase {
             'manual', $timestart, $timeend, ENROL_USER_ACTIVE);
         $this->getDataGenerator()->enrol_user($user3->id, $course->id, 'editingteacher',
             'manual', time(), time(), ENROL_USER_SUSPENDED);
-
-        // Add user1 to a group.
-        $group = $this->getDataGenerator()->create_group(['courseid' => $course->id, 'name' => 'My group']);
-        $this->getDataGenerator()->create_group_member(['groupid' => $group->id, 'userid' => $user1->id]);
-
-        // Add some cohort data.
-        $cohort = $this->getDataGenerator()->create_cohort(['name' => 'My cohort']);
-        cohort_add_member($cohort->id, $user2->id);
 
         // Mark course as completed for the user.
         $ccompletion = new completion_completion(array('course' => $course->id, 'userid' => $user1->id));

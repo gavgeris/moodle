@@ -46,7 +46,6 @@ export default class Component extends DndCmItem {
         this.selectors = {
             CM_NAME: `[data-for='cm_name']`,
             CM_COMPLETION: `[data-for='cm_completion']`,
-            DND_ALLOWED: `[data-courseindexdndallowed='true']`,
         };
         // Default classes to toggle on refresh.
         this.classes = {
@@ -80,9 +79,7 @@ export default class Component extends DndCmItem {
      * @param {Object} state the course state.
      */
     stateReady(state) {
-        if (document.querySelector(this.selectors.DND_ALLOWED)) {
-            this.configDragDrop(this.id);
-        }
+        this.configDragDrop(this.id);
         const cm = state.cm.get(this.id);
         const course = state.course;
         // Refresh completion icon.
@@ -180,7 +177,7 @@ export default class Component extends DndCmItem {
         }
         // Check if the completion value has changed.
         const completionElement = this.getElement(this.selectors.CM_COMPLETION);
-        if (!completionElement || completionElement.dataset.value == element.completionstate) {
+        if (completionElement.dataset.value == element.completionstate) {
             return;
         }
 
@@ -225,13 +222,7 @@ export default class Component extends DndCmItem {
      * @return {String} the anchor link.
      */
     _getActivitySectionURL(cm) {
-        let section = this.reactive.get('section', cm.sectionid);
-
-        // If the section is delegated get its parent section if it has one.
-        if (section.component && section.parentsectionid) {
-            section = this.reactive.get('section', section.parentsectionid);
-        }
-
+        const section = this.reactive.get('section', cm.sectionid);
         if (!section) {
             return '#';
         }

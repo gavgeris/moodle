@@ -14,36 +14,37 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace core\output\action_menu;
+namespace core;
 
-use core\output\action_link;
-use core\output\html_writer;
-use core\output\renderable;
+defined('MOODLE_INTERNAL') || die();
+
+global $CFG;
+require_once($CFG->libdir . '/csslib.php');
 
 /**
- * An action menu filler
+ * CSS optimiser test class.
  *
  * @package core
- * @category output
- * @copyright 2013 Andrew Nicols
+ * @category test
+ * @copyright 2012 Sam Hemelryk
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class filler extends action_link implements renderable {
+final class csslib_test extends \advanced_testcase {
     /**
-     * True if this is a primary action. False if not.
-     * @var bool
+     * Test that css_is_colour function throws an exception.
      */
-    public $primary = true;
+    public function test_css_is_colour(): void {
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('css_is_colour() can not be used anymore.');
+        css_is_colour();
+    }
 
     /**
-     * Constructs the object.
+     * Test that css_is_width function throws an exception.
      */
-    public function __construct() {
-        $this->attributes['id'] = html_writer::random_id('action_link');
+    public function test_css_is_width(): void {
+        $this->expectException('coding_exception');
+        $this->expectExceptionMessage('css_is_width() can not be used anymore.');
+        css_is_width();
     }
 }
-
-// Alias this class to the old name.
-// This file will be autoloaded by the legacyclasses autoload system.
-// In future all uses of this class will be corrected and the legacy references will be removed.
-class_alias(filler::class, \action_menu_filler::class);

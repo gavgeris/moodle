@@ -245,11 +245,11 @@ Feature: Basic use of the Manual grading report
       | Essay 2       | 1        | 0              | 0                    |
       | TF1           | 0        | 0              | 1                    |
     # Grade the not yet graded Essay 2.
-    And I click on "Grade" "link" in the "Essay 2" "table_row"
+    And I click on "Grade" "link" in the "2" "table_row"
     And I set the field "Mark" to "20"
     And I press "Save and show next"
     # Update the already graded Essay 1.
-    And I click on "grade all" "link" in the "Essay 1" "table_row"
+    And I click on "grade all" "link" in the "1" "table_row"
     And I set the field "Mark" to "5"
     And I press "Save and show next"
     # Confirm that each question is graded for the corresponding student.

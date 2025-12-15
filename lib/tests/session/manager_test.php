@@ -14,9 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace core\session;
-
-use core\tests\session\mock_handler;
+namespace core;
 
 /**
  * Unit tests for session manager class.
@@ -25,18 +23,8 @@ use core\tests\session\mock_handler;
  * @category   test
  * @copyright  2013 Petr Skoda {@link http://skodak.org}
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- * @covers     \core\session\manager
  */
-final class manager_test extends \advanced_testcase {
-
-    /** @var mock_handler $mockhandler Dedicated testing handler. */
-    protected mock_handler $mockhandler;
-
-    protected function setUp(): void {
-        parent::setUp();
-        $this->mockhandler = new mock_handler();
-    }
-
+final class session_manager_test extends \advanced_testcase {
     public function test_start(): void {
         $this->resetAfterTest();
         // Session must be started only once...
@@ -197,23 +185,23 @@ final class manager_test extends \advanced_testcase {
         $record->sid = $sid;
         $record->timecreated = time();
         $record->timemodified = $record->timecreated;
-        $record->id = $this->mockhandler->add_test_session($record);
+        $record->id = $DB->insert_record('sessions', $record);
 
         $this->assertTrue(\core\session\manager::session_exists($sid));
 
         $record->timecreated = time() - $CFG->sessiontimeout - 100;
         $record->timemodified = $record->timecreated + 10;
-        \core\session\manager::update_session($record);
+        $DB->update_record('sessions', $record);
 
         $this->assertTrue(\core\session\manager::session_exists($sid));
 
         $record->userid = $guest->id;
-        \core\session\manager::update_session($record);
+        $DB->update_record('sessions', $record);
 
         $this->assertTrue(\core\session\manager::session_exists($sid));
 
         $record->userid = $user->id;
-        \core\session\manager::update_session($record);
+        $DB->update_record('sessions', $record);
 
         $this->assertFalse(\core\session\manager::session_exists($sid));
 
@@ -223,6 +211,7 @@ final class manager_test extends \advanced_testcase {
     }
 
     public function test_touch_session(): void {
+        global $DB;
         $this->resetAfterTest();
 
         $sid = md5('hokus');
@@ -234,23 +223,17 @@ final class manager_test extends \advanced_testcase {
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 30;
         $record->firstip      = $record->lastip = '10.0.0.1';
-        $record->id = $this->mockhandler->add_test_session($record);
+        $record->id = $DB->insert_record('sessions', $record);
 
         $now = time();
         \core\session\manager::touch_session($sid);
-        $session = \core\session\manager::get_session_by_sid($sid);
+        $updated = $DB->get_field('sessions', 'timemodified', array('id'=>$record->id));
 
-        $this->assertGreaterThanOrEqual($now, $session->timemodified);
-        $this->assertLessThanOrEqual(time(), $session->timemodified);
+        $this->assertGreaterThanOrEqual($now, $updated);
+        $this->assertLessThanOrEqual(time(), $updated);
     }
 
-    /**
-     * Test destroy method.
-     *
-     * @return void
-     * @throws \dml_exception
-     */
-    public function test_destroy(): void {
+    public function test_kill_session(): void {
         global $DB, $USER;
         $this->resetAfterTest();
 
@@ -266,23 +249,23 @@ final class manager_test extends \advanced_testcase {
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 30;
         $record->firstip      = $record->lastip = '10.0.0.1';
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid       = 0;
         $record->sid          = md5('pokus');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
-        $this->assertEquals(2, $this->mockhandler->count_sessions());
+        $this->assertEquals(2, $DB->count_records('sessions'));
 
-        \core\session\manager::destroy($sid);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertEquals(1, count($sessions));
-        $this->assertFalse($this->contains_session(['sid' => $sid], $sessions));
+        \core\session\manager::kill_session($sid);
+
+        $this->assertEquals(1, $DB->count_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('sid'=>$sid)));
 
         $this->assertSame($userid, $USER->id);
     }
 
-    public function test_destroy_user_sessions(): void {
+    public function test_kill_user_sessions(): void {
         global $DB, $USER;
         $this->resetAfterTest();
 
@@ -298,44 +281,40 @@ final class manager_test extends \advanced_testcase {
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 30;
         $record->firstip      = $record->lastip = '10.0.0.1';
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->sid          = md5('hokus2');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid       = 0;
         $record->sid          = md5('pokus');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $this->assertEquals(3, $DB->count_records('sessions'));
 
-        \core\session\manager::destroy_user_sessions($userid);
+        \core\session\manager::kill_user_sessions($userid);
 
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertEquals(1, count($sessions));
-        $this->assertFalse($this->contains_session(['userid' => $userid], $sessions));
+        $this->assertEquals(1, $DB->count_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $userid)));
 
         $record->userid       = $userid;
         $record->sid          = md5('pokus3');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid       = $userid;
         $record->sid          = md5('pokus4');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid       = $userid;
         $record->sid          = md5('pokus5');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
-        $sessions = \core\session\manager::get_sessions_by_userid($userid);
-        $this->assertCount(3, $sessions);
+        $this->assertEquals(3, $DB->count_records('sessions', array('userid' => $userid)));
 
-        \core\session\manager::destroy_user_sessions($userid, md5('pokus5'));
+        \core\session\manager::kill_user_sessions($userid, md5('pokus5'));
 
-        $sessions = \core\session\manager::get_sessions_by_userid($userid);
-        $session = reset($sessions);
-        $this->assertCount(1, $sessions);
-        $this->assertEquals(md5('pokus5'), $session->sid);
+        $this->assertEquals(1, $DB->count_records('sessions', array('userid' => $userid)));
+        $this->assertEquals(1, $DB->count_records('sessions', array('userid' => $userid, 'sid' => md5('pokus5'))));
     }
 
     public function test_apply_concurrent_login_limit(): void {
@@ -355,41 +334,41 @@ final class manager_test extends \advanced_testcase {
 
         $record->sid = md5('hokus1');
         $record->timecreated = 20;
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('hokus2');
         $record->timecreated = 10;
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('hokus3');
         $record->timecreated = 30;
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid = $user2->id;
         $record->sid = md5('pokus1');
         $record->timecreated = 20;
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('pokus2');
         $record->timecreated = 10;
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('pokus3');
         $record->timecreated = 30;
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->timecreated = 10;
         $record->userid = $guest->id;
         $record->sid = md5('g1');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('g2');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('g3');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid = 0;
         $record->sid = md5('nl1');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('nl2');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
         $record->sid = md5('nl3');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         set_config('limitconcurrentlogins', 0);
         $this->assertCount(12, $DB->get_records('sessions'));
@@ -411,103 +390,57 @@ final class manager_test extends \advanced_testcase {
         set_config('limitconcurrentlogins', 2);
 
         \core\session\manager::apply_concurrent_login_limit($user1->id);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(11, $sessions);
-        $this->assertTrue($this->contains_session(['userid' => $user1->id, 'timecreated' => 20], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user1->id, 'timecreated' => 30], $sessions));
-        $this->assertFalse($this->contains_session(['userid' => $user1->id, 'timecreated' => 10], $sessions));
+        $this->assertCount(11, $DB->get_records('sessions'));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 20)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 30)));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 10)));
 
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 20], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 30], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 10], $sessions));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 20)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 30)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 10)));
         set_config('limitconcurrentlogins', 2);
         \core\session\manager::apply_concurrent_login_limit($user2->id, md5('pokus2'));
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(10, $sessions);
-        $this->assertFalse($this->contains_session(['userid' => $user2->id, 'timecreated' => 20], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 30], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 10], $sessions));
+        $this->assertCount(10, $DB->get_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 20)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 30)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 10)));
 
         \core\session\manager::apply_concurrent_login_limit($guest->id);
         \core\session\manager::apply_concurrent_login_limit(0);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(10, $sessions);
+        $this->assertCount(10, $DB->get_records('sessions'));
 
         set_config('limitconcurrentlogins', 1);
 
         \core\session\manager::apply_concurrent_login_limit($user1->id, md5('grrr'));
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(9, $sessions);
-        $this->assertFalse($this->contains_session(['userid' => $user1->id, 'timecreated' => 20], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user1->id, 'timecreated' => 30], $sessions));
-        $this->assertFalse($this->contains_session(['userid' => $user1->id, 'timecreated' => 10], $sessions));
+        $this->assertCount(9, $DB->get_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 20)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 30)));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 10)));
 
         \core\session\manager::apply_concurrent_login_limit($user1->id);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(9, $sessions);
-        $this->assertFalse($this->contains_session(['userid' => $user1->id, 'timecreated' => 20], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user1->id, 'timecreated' => 30], $sessions));
-        $this->assertFalse($this->contains_session(['userid' => $user1->id, 'timecreated' => 10], $sessions));
+        $this->assertCount(9, $DB->get_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 20)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 30)));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user1->id, 'timecreated' => 10)));
 
         \core\session\manager::apply_concurrent_login_limit($user2->id, md5('pokus2'));
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(8, $sessions);
-        $this->assertFalse($this->contains_session(['userid' => $user2->id, 'timecreated' => 20], $sessions));
-        $this->assertFalse($this->contains_session(['userid' => $user2->id, 'timecreated' => 30], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 10], $sessions));
+        $this->assertCount(8, $DB->get_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 20)));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 30)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 10)));
 
         \core\session\manager::apply_concurrent_login_limit($user2->id);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(8, $sessions);
-        $this->assertFalse($this->contains_session(['userid' => $user2->id, 'timecreated' => 20], $sessions));
-        $this->assertFalse($this->contains_session(['userid' => $user2->id, 'timecreated' => 30], $sessions));
-        $this->assertTrue($this->contains_session(['userid' => $user2->id, 'timecreated' => 10], $sessions));
+        $this->assertCount(8, $DB->get_records('sessions'));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 20)));
+        $this->assertFalse($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 30)));
+        $this->assertTrue($DB->record_exists('sessions', array('userid' => $user2->id, 'timecreated' => 10)));
 
         \core\session\manager::apply_concurrent_login_limit($guest->id);
         \core\session\manager::apply_concurrent_login_limit(0);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertCount(8, $sessions);
+        $this->assertCount(8, $DB->get_records('sessions'));
     }
 
-    /**
-     * Helper method to check if the sessions array contains a session with the given conditions.
-     *
-     * @param array $conditions Conditions to match.
-     * @param null|\Iterator $sessions Sessions to check.
-     * @return bool
-     */
-    protected function contains_session(array $conditions, ?\Iterator $sessions = null): bool {
-        foreach ($sessions as $session) {
-            if ($this->matches_session($conditions, $session)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Helper method to check if the session matches the given conditions.
-     *
-     * @param array $conditions Conditions to match.
-     * @param \stdClass $session Session to check.
-     * @return bool
-     */
-    protected function matches_session(array $conditions, \stdClass $session): bool {
-        foreach ($conditions as $key => $value) {
-            if ($session->$key != $value) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    /**
-     * Test destroy_all method.
-     *
-     * @return void
-     * @throws \dml_exception
-     */
-    public function test_destroy_all(): void {
+    public function test_kill_all_sessions(): void {
         global $DB, $USER;
         $this->resetAfterTest();
 
@@ -523,25 +456,25 @@ final class manager_test extends \advanced_testcase {
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 30;
         $record->firstip      = $record->lastip = '10.0.0.1';
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->sid          = md5('hokus2');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $record->userid       = 0;
         $record->sid          = md5('pokus');
-        $this->mockhandler->add_test_session($record);
+        $DB->insert_record('sessions', $record);
 
         $this->assertEquals(3, $DB->count_records('sessions'));
 
-        \core\session\manager::destroy_all();
+        \core\session\manager::kill_all_sessions();
 
         $this->assertEquals(0, $DB->count_records('sessions'));
         $this->assertSame(0, $USER->id);
     }
 
     public function test_gc(): void {
-        global $CFG, $USER;
+        global $CFG, $DB, $USER;
         $this->resetAfterTest();
 
         $this->setAdminUser();
@@ -550,8 +483,6 @@ final class manager_test extends \advanced_testcase {
         $guestid = $USER->id;
         $this->setUser(0);
 
-        // Set sessions timeout to 600 (10 minutes) seconds.
-        // We will test if sessions not modified for 600 seconds are removed.
         $CFG->sessiontimeout = 60*10;
 
         $record = new \stdClass();
@@ -562,55 +493,55 @@ final class manager_test extends \advanced_testcase {
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 30;
         $record->firstip      = $record->lastip = '10.0.0.1';
-        $r1 = $this->mockhandler->add_test_session($record);
+        $r1 = $DB->insert_record('sessions', $record);
 
         $record->sid          = md5('hokus2');
         $record->userid       = $adminid;
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 60*20;
-        $r2 = $this->mockhandler->add_test_session($record);
+        $r2 = $DB->insert_record('sessions', $record);
 
         // Guest session still within the session timeout limit.
         $record->sid          = md5('hokus3');
         $record->userid       = $guestid;
         $record->timecreated  = time() - 60*60*60;
         $record->timemodified = time() - 60*5;
-        $r3 = $this->mockhandler->add_test_session($record);
+        $r3 = $DB->insert_record('sessions', $record);
 
         // Guest session outside the session timeout limit.
         $record->sid          = md5('hokus4');
         $record->userid       = $guestid;
         $record->timecreated  = time() - 60*60*60;
         $record->timemodified = time() - 60*10*5 - 60;
-        $r4 = $this->mockhandler->add_test_session($record);
+        $r4 = $DB->insert_record('sessions', $record);
 
         $record->sid          = md5('hokus5');
         $record->userid       = 0;
         $record->timecreated  = time() - 60*5;
         $record->timemodified = time() - 60*5;
-        $r5 = $this->mockhandler->add_test_session($record);
+        $r5 = $DB->insert_record('sessions', $record);
 
         $record->sid          = md5('hokus6');
         $record->userid       = 0;
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 60*10 -10;
-        $r6 = $this->mockhandler->add_test_session($record);
+        $r6 = $DB->insert_record('sessions', $record);
 
         $record->sid          = md5('hokus7');
         $record->userid       = 0;
         $record->timecreated  = time() - 60*60;
         $record->timemodified = time() - 60*9;
-        $r7 = $this->mockhandler->add_test_session($record);
+        $r7 = $DB->insert_record('sessions', $record);
 
-        \core\session\manager::gc($CFG->sessiontimeout);
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertTrue($this->contains_session(['id' => $r1], $sessions));
-        $this->assertFalse($this->contains_session(['id' => $r2], $sessions));
-        $this->assertTrue($this->contains_session(['id' => $r3], $sessions));
-        $this->assertFalse($this->contains_session(['id' => $r4], $sessions));
-        $this->assertFalse($this->contains_session(['id' => $r5], $sessions));
-        $this->assertFalse($this->contains_session(['id' => $r6], $sessions));
-        $this->assertTrue($this->contains_session(['id' => $r7], $sessions));
+        \core\session\manager::gc();
+
+        $this->assertTrue($DB->record_exists('sessions', array('id'=>$r1)));
+        $this->assertFalse($DB->record_exists('sessions', array('id'=>$r2)));
+        $this->assertTrue($DB->record_exists('sessions', array('id'=>$r3)));
+        $this->assertFalse($DB->record_exists('sessions', array('id'=>$r4)));
+        $this->assertFalse($DB->record_exists('sessions', array('id'=>$r5)));
+        $this->assertFalse($DB->record_exists('sessions', array('id'=>$r6)));
+        $this->assertTrue($DB->record_exists('sessions', array('id'=>$r7)));
     }
 
     /**
@@ -719,7 +650,7 @@ final class manager_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function pages_sessionlocks(): array {
+    public function pages_sessionlocks() {
         return [
             [
                 'url'      => '/good.php',
@@ -809,7 +740,7 @@ final class manager_test extends \advanced_testcase {
      *
      * @return array
      */
-    public function sessionlock_history(): array {
+    public function sessionlock_history() {
         return [
             [
                 'url'      => '/good.php',
@@ -990,45 +921,5 @@ final class manager_test extends \advanced_testcase {
 
         $result = $method->invokeArgs(null, [$a, $b]);
         $this->assertSame($expected, $result);
-    }
-
-    /**
-     * Test destroy by auth plugin method.
-     */
-    public function test_destroy_by_auth_plugin(): void {
-        $this->resetAfterTest();
-        global $DB;
-
-        // Create test users.
-        $user1 = $this->getDataGenerator()->create_user();
-        $user2 = $this->getDataGenerator()->create_user(['auth' => 'db']);
-
-        // Create sessions for the users.
-        $user1sid = md5('hokus');
-        $record = new \stdClass();
-        $record->state        = 0;
-        $record->sid          = $user1sid;
-        $record->sessdata     = null;
-        $record->userid       = $user1->id;
-        $record->timecreated  = time() - 60 * 60;
-        $record->timemodified = time() - 30;
-        $record->firstip      = $record->lastip = '10.0.0.1';
-        $this->mockhandler->add_test_session($record);
-
-        $record->sid          = md5('pokus');
-        $record->userid       = $user2->id;
-        $this->mockhandler->add_test_session($record);
-
-        // Check sessions.
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertEquals(2, count($sessions));
-
-        // Destroy the session for the user with manual auth plugin.
-        \core\session\manager::destroy_by_auth_plugin('manual');
-
-        // Check that the session for the user with manual auth plugin is destroyed.
-        $sessions = $this->mockhandler->get_all_sessions();
-        $this->assertEquals(1, count($sessions));
-        $this->assertFalse($this->contains_session(['sid' => $user1sid], $sessions));
     }
 }

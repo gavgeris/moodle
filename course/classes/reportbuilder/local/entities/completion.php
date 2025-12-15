@@ -224,7 +224,7 @@ class completion extends base {
         $currenttime = time();
         $columns[] = (new column(
             'dayscourse',
-            new lang_string('daystakingcourse', 'completion'),
+            new lang_string('daystakingcourse', 'course'),
             $this->get_entity_name()
         ))
             ->add_joins($this->get_joins())
@@ -236,10 +236,9 @@ class completion extends base {
                         {$coursecompletion}.timecompleted
                         ELSE
                         {$currenttime}
-                    END - {$course}.startdate)
+                    END - {$course}.startdate) / " . DAYSECS . "
                 END)", 'dayscourse')
-            ->set_is_sortable(true)
-            ->set_callback([format::class, 'format_time']);
+            ->set_is_sortable(true);
 
         // Days since last completion (days since last enrolment date until completion or until current date if not completed).
         $columns[] = (new column(
@@ -256,10 +255,9 @@ class completion extends base {
                         {$coursecompletion}.timecompleted
                         ELSE
                         {$currenttime}
-                    END - {$coursecompletion}.timeenrolled)
+                    END - {$coursecompletion}.timeenrolled) / " . DAYSECS . "
                 END)", 'daysuntilcompletion')
-            ->set_is_sortable(true)
-            ->set_callback([format::class, 'format_time']);
+            ->set_is_sortable(true);
 
         // Student course grade.
         $columns[] = (new column(

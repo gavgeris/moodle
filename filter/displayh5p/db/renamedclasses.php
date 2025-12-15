@@ -1,4 +1,5 @@
 <?php
+
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -15,15 +16,13 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Renamed classes for the filter_displayh5p plugin.
+ * Strings for component 'filter_tidy', language 'en', branch 'MOODLE_20_STABLE'
  *
- * @package   filter_displayh5p
- * @copyright Jun Pataleta <jun@moodle.com>
+ * @package   filter_tidy
+ * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-defined('MOODLE_INTERNAL') || die;
-
-$renamedclasses = [
-    'filter_displayh5p' => \filter_displayh5p\text_filter::class,
-];
+$string['filtername'] = 'HTML tidy';
+$string['privacy:metadata'] = 'The HTML tidy plugin does not store any personal data.';
+$string['tidyextensionrequired'] = 'To use this filter, the \'tidy\' PHP extension must be installed.';
