@@ -23,6 +23,9 @@ $sqlstmt4 = file_get_contents($sqlstmtfile);
 
 if ($isteacherplus) {
     $rs = $DB->get_recordset_sql($sqlstmt4, array($courseid, $courseid));
+    if (!$rs) {
+        echo $DB->get_last_sql_error();
+    }
 } else {
     $rs = $DB->get_recordset_sql($sqlstmt4, array($USER->id, $courseid, $USER->id, $courseid));
 }

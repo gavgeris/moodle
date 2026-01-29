@@ -70,6 +70,7 @@ git submodule add https://github.com/moodle-an-hochschulen/moodle-local_boostnav
 git submodule add https://gitlab.com/adapta/moodle-local_modcustomfields local/modcustomfields
 git submodule add https://github.com/moodle-an-hochschulen/moodle-local_staticpage local/staticpage
 git submodule add https://github.com/gavgeris/local_reusecontent_ws.git local/reusecontent_ws
+git submodule add https://github.com/gavgeris/moodle-local-teachersubstitution.git local/teachersubstitution
 
 #enrolment
 git submodule add https://github.com/bobopinna/moodle-enrol_autoenrol enrol/autoenrol
