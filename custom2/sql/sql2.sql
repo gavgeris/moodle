@@ -2,7 +2,7 @@ SELECT 	epimorfwths,
 	email,
 	SUM(plithos) AS plithos,
 	days,
-	SUM(WEEK0) AS week0,
+	SUM(WEEK0) AS WEEK0,
 	SUM(WEEK1) AS WEEK1,
 	SUM(WEEK2) AS WEEK2,
 	SUM(WEEK3) AS WEEK3,
@@ -118,7 +118,7 @@ FROM
 					   AND ((groupname != 'Συντονιστές Επιμορφωτών' aND groupname like 'Ομάδα%') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
 		    )
 		    AND mg.courseid = c.instanceid) table1
-		WHERE mcc.name LIKE '2024-25'
+		WHERE mcc.name LIKE '2025-26'
 		  AND mc.category = mcc.id
 		  AND ma.course = mc.id 
 		  AND mas.assignment = ma.id 

@@ -55,9 +55,9 @@ FROM
 			SELECT DISTINCT epimorfoumenos
 			  FROM group_epimorfwth
 			 WHERE 1=1
-			   AND courseid != 4252 -- Επιμόρφωση Επιμορφωτών
+			   AND courseid != 4252
 			   AND courseid = mg.courseid
-			   AND ((groupname != 'Συντονιστές Επιμορφωτών') OR (roleid = 1 AND groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
+			   AND ((groupname != 'Ξ£Ο…Ξ½Ο„ΞΏΞ½ΞΉΟƒΟ„Ξ­Ο‚ Ξ•Ο€ΞΉΞΌΞΏΟΟ†Ο‰Ο„ΟΞ½') OR (roleid = 1 AND groupname = 'Ξ£Ο…Ξ½Ο„ΞΏΞ½ΞΉΟƒΟ„Ξ­Ο‚ Ξ•Ο€ΞΉΞΌΞΏΟΟ†Ο‰Ο„ΟΞ½')) -- Ξ•ΞΎΞ±ΞΉΟΟ Ο„ΞΏ group Ξ£Ο…Ξ½Ο„ΞΏΞ½ΞΉΟƒΟ„Ξ­Ο‚ ΞµΟ€ΞΉΞΌΞΏΟΟ†Ο‰Ο„ΟΞ½ Ξ³ΞΉΞ± ΟΞ»ΞΏΟ…Ο‚ ΞµΞΊΟ„ΟΟ‚ Ο„ΞΏΟ…Ο‚ Manager
     )
     AND mg.courseid = c.instanceid
 	AND mg.courseid = ?) table1 
@@ -83,7 +83,7 @@ WHERE mcc.name LIKE '2022-23'
   and mcm.module = 1
   and mcm.instance = ma.id 
     
-  -- Έλεγχος για μη διορθωμένες εργασίες
+  -- οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½ οΏ½οΏ½οΏ½ οΏ½οΏ½ οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½ οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½οΏ½
   AND ( NOT EXISTS (SELECT 1
 		    FROM mdl_assign_grades mag
 		   WHERE mag.assignment = mas.assignment

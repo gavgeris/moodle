@@ -16,6 +16,7 @@ WHERE ma.course = mc.id
   AND mas.status = 'submitted'
   AND (grade != 2 OR grade IS NULL)
   AND datediff(from_unixtime(ma.cutoffdate), now()) <= 7 -- Εργασίες που κλειδώνουν σε 5 μέρες
+  AND datediff(from_unixtime(ma.duedate), from_unixtime(mas.timecreated) ) >= 0 -- Εργασίες που έχουν υποβληθεί τις πρώτες 2 εβδομάδες.
   AND ( NOT EXISTS (SELECT 1
                     FROM mdl_assign_grades mag
                     WHERE mag.assignment = mas.assignment

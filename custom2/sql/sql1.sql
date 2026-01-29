@@ -38,7 +38,7 @@ FROM
     AND ge.epimorfwths = ?
     AND ((ge.groupname != 'Συντονιστές Επιμορφωτών') OR (ge.roleid = 1 AND ge.groupname = 'Συντονιστές Επιμορφωτών')) -- Εξαιρώ το group Συντονιστές επιμορφωτών για όλους εκτός τους Manager
     AND mg.courseid = c.instanceid) table1
-WHERE mcc.name LIKE '2024-25'
+WHERE mcc.name LIKE '2025-26'
   AND mc.category = mcc.id
   AND ma.course = mc.id 
   AND mas.assignment = ma.id 
