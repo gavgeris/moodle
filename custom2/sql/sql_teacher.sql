@@ -27,35 +27,43 @@ GROUP BY assignment
 UNION
 SELECT
     CONCAT('<a target="_blank" href="',
-           'http://seminars.etwinning.gr/mod/forum/view.php&quest;id=',(SELECT id FROM mdl_course_modules mcm WHERE instance = mf.id AND course = mc.id AND module = 9 LIMIT 1),'">',
+           'http://seminars.etwinning.gr/mod/forum/view.php&quest;id=',
+           (SELECT id FROM mdl_course_modules mcm
+            WHERE instance = mf.id AND course = mc.id AND module = 9 LIMIT 1),
+           '">',
            'Forum:', mf.name,
            '</a>'
     ) AS assignment,
-    COUNT(distinct mfp.userid) AS plithos
+    COUNT(DISTINCT mfp.userid) AS plithos
 FROM
-    mdl_course mc JOIN group_epimorfwth ge ON (ge.courseid = mc.id AND epimorfwths = ?),
+    mdl_course mc
+        JOIN group_epimorfwth ge ON (ge.courseid = mc.id AND ge.epimorfwths = ?),
     mdl_forum mf,
     mdl_forum_discussions mfd,
     mdl_forum_posts mfp
-
-WHERE mc.id = ?
+WHERE
+    mc.id = ?
   AND mf.course = mc.id
   AND mfd.forum = mf.id
   AND mfd.id = mfp.discussion
-
   AND mfp.userid = ge.epimorfoumenos
   AND mf.assessed != 0
 
   AND mfp.userid NOT IN (
     SELECT mgg.userid
-    FROM mdl_grade_items mgi, mdl_grade_grades mgg
-    WHERE courseid = mc.id
-      AND mgi.id = mgg.itemid
-      AND itemmodule = 'forum'
-      AND finalgrade IS NOT NULL
-      AND iteminstance = mf.id
-)
+    FROM mdl_grade_items mgi
+    JOIN mdl_grade_grades mgg ON mgi.id = mgg.itemid
+    WHERE mgi.courseid = mc.id
+  AND mgi.itemmodule = 'forum'
+  AND mgg.finalgrade IS NOT NULL
+  AND mgi.iteminstance = mf.id
+    )
+
+  AND NOT EXISTS (
+    SELECT 1
+    FROM mdl_forum_posts mfp_trainer
+    WHERE mfp_trainer.discussion = mfd.id
+  AND mfp_trainer.userid = ge.epimorfwths
+  AND mfp_trainer.created > mfp.created
+    )
 GROUP BY assignment;
-
-
-;
